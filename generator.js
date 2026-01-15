@@ -1,223 +1,225 @@
-// VISIONS ENGINE 2.0: THE CREATIVE DIRECTOR
-// Now supports Procedural CSS Art, Advanced Motion, and Organic Layouts.
+// VISIONS ENGINE V3.0 : THE PRO ARCHITECT
+// Features: Clip-path Geometry, Scanlines, Glass-Noise Textures, Hollow Typography.
 
-// --- 1. THE ASSET GENERATOR (CSS ART) ---
-// Generates cool background shapes if no image matches.
-const geometryEngine = {
-    getMeshGradient: (colors) => `
-        background-color: ${colors.bg};
-        background-image: 
-            radial-gradient(at 0% 0%, ${colors.primary}50 0px, transparent 50%),
-            radial-gradient(at 100% 0%, ${colors.accent}50 0px, transparent 50%),
-            radial-gradient(at 100% 100%, ${colors.primary}50 0px, transparent 50%);
-        filter: blur(80px);
-        opacity: 0.6;
-        position: absolute; inset: 0; z-index: -1;
-    `,
-    getGrid: (color) => `
-        background-image: linear-gradient(${color}20 1px, transparent 1px),
-        linear-gradient(90deg, ${color}20 1px, transparent 1px);
-        background-size: 40px 40px;
-        mask-image: radial-gradient(circle at center, black, transparent 80%);
-        position: absolute; inset: 0; z-index: -1; opacity: 0.5;
-    `,
-    getOrb: (color) => `
-        width: 300px; height: 300px;
-        background: radial-gradient(circle, ${color}, transparent 70%);
-        position: absolute; border-radius: 50%;
-        filter: blur(40px); opacity: 0.8;
-        animation: floatOrb 10s infinite alternate;
-    `
-};
-
-// --- 2. THE DESIGN SYSTEM ---
 const designSystem = {
-    colors: {
-        cyber: { primary: '#00f3ff', bg: '#050505', text: '#ffffff', accent: '#ff0055' },
-        luxury: { primary: '#d4af37', bg: '#0a0a0a', text: '#f5f5f5', accent: '#ffffff' },
-        fresh: { primary: '#00b894', bg: '#ffffff', text: '#2d3436', accent: '#55efc4' },
-        creative: { primary: '#6c5ce7', bg: '#0f0c29', text: '#ffffff', accent: '#fd79a8' }, // Dark Purple
-        warm: { primary: '#e17055', bg: '#fff3e0', text: '#2d3436', accent: '#fab1a0' }
-    },
-    fonts: {
-        modern: { head: 'Space Grotesk', body: 'Inter' },
-        elegant: { head: 'Playfair Display', body: 'Lato' },
-        tech: { head: 'Rajdhani', body: 'Inter' }
-    },
+    // Assets Library
     images: {
         gaming: 'assets/hero_gaming_cyborg.png',
         ai: 'assets/hero_ai_robot.png',
         gym: 'assets/hero_fitness_gym.png',
         coffee: 'assets/hero_coffee_cup.png'
+    },
+    // CSS FX Generators
+    fx: {
+        scanlines: `
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none; position: fixed; inset: 0; z-index: 999;
+        `,
+        glassNoise: `
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        `,
+        neonGlow: (color) => `
+            box-shadow: 0 0 10px ${color}, 0 0 20px ${color}40;
+            border: 1px solid ${color};
+        `
     }
 };
 
-// --- 3. THE BRAIN (Logic) ---
 function analyzePrompt(prompt) {
     const p = prompt.toLowerCase();
     let dna = {
-        theme: 'fresh', // default
-        font: 'modern',
-        shape: 'rounded', // rounded, sharp, pill
-        layout: 'split',  // split, center
-        image: null,
-        effects: [] // glass, glow, grid
+        theme: 'clean',  // clean, cyber, luxury, organic
+        palette: { bg: '#ffffff', text: '#000000', primary: '#333333' },
+        font: 'Inter',
+        shape: 'rounded', // rounded, sharp, cyber-cut
+        fx: [],
+        asset: null
     };
 
-    // Keyword Mapping
-    if (p.includes('game') || p.includes('cyber') || p.includes('neon')) {
-        dna.theme = 'cyber'; dna.font = 'tech'; dna.shape = 'sharp'; dna.image = designSystem.images.gaming;
-        dna.effects.push('grid', 'glow');
+    // 1. Theme Logic
+    if (p.includes('game') || p.includes('war') || p.includes('cod') || p.includes('duty') || p.includes('cyber')) {
+        dna.theme = 'cyber';
+        dna.palette = { bg: '#0b0b0b', text: '#e0e0e0', primary: '#f1c40f' }; // Yellow/Black ops vibes
+        if (p.includes('neon')) dna.palette.primary = '#00f3ff'; // switch to cyan if neon asked
+        dna.font = 'Rajdhani';
+        dna.shape = 'cyber-cut'; // The Sci-Fi Cut Corner shape
+        dna.fx.push('scanlines');
+        dna.asset = designSystem.images.gaming;
     }
-    else if (p.includes('luxury') || p.includes('gold') || p.includes('premium')) {
-        dna.theme = 'luxury'; dna.font = 'elegant'; dna.shape = 'sharp'; dna.image = designSystem.images.ai; // Abstract
-        dna.layout = 'center';
+    else if (p.includes('luxury') || p.includes('gold') || p.includes('watch') || p.includes('billion')) {
+        dna.theme = 'luxury';
+        dna.palette = { bg: '#050505', text: '#ecf0f1', primary: '#d4af37' }; // Gold
+        dna.font = 'Playfair Display';
+        dna.shape = 'sharp';
+        dna.fx.push('noise');
     }
-    else if (p.includes('design') || p.includes('creative') || p.includes('art')) {
-        dna.theme = 'creative'; dna.font = 'modern'; dna.shape = 'pill';
-        dna.effects.push('mesh'); // Mesh gradients for creative
+    else if (p.includes('gym') || p.includes('fitness') || p.includes('sport')) {
+        dna.theme = 'impact';
+        dna.palette = { bg: '#000000', text: '#ffffff', primary: '#eb4d4b' }; // Red/Black
+        dna.font = 'Space Grotesk';
+        dna.shape = 'sharp'; // Skewed
+        dna.asset = designSystem.images.gym;
+        dna.fx.push('italic-headers');
     }
-    else if (p.includes('coffee') || p.includes('warm') || p.includes('cozy')) {
-        dna.theme = 'warm'; dna.font = 'modern'; dna.shape = 'rounded'; dna.image = designSystem.images.coffee;
-    }
-    else if (p.includes('gym') || p.includes('fitness')) {
-        dna.theme = 'fresh'; dna.font = 'modern'; dna.shape = 'sharp'; dna.image = designSystem.images.gym;
-        dna.effects.push('glitch');
+    else if (p.includes('nature') || p.includes('coffee') || p.includes('organic')) {
+        dna.theme = 'organic';
+        dna.palette = { bg: '#fdfbf7', text: '#2d3436', primary: '#27ae60' };
+        if (p.includes('coffee')) dna.palette.primary = '#d35400';
+        dna.font = 'Lato';
+        dna.shape = 'rounded';
+        dna.asset = designSystem.images.coffee;
     }
 
     return dna;
 }
 
-// --- 4. THE GENERATOR ---
 function generateSite() {
-    const prompt = document.getElementById('aiPrompt').value || "Creative Agency";
+    const prompt = document.getElementById('aiPrompt').value || "Modern Website";
     const projectName = document.getElementById('projectName').value || "Brand";
     const dna = analyzePrompt(prompt);
-
-    const colors = designSystem.colors[dna.theme];
-    const fonts = designSystem.fonts[dna.font];
 
     const frame = document.getElementById('previewFrame');
     const doc = frame.contentWindow.document;
 
-    // Construct Assets (Backgrounds)
-    let bgLayer = '';
-    if (dna.effects.includes('mesh')) bgLayer += geometryEngine.getMeshGradient(colors);
-    if (dna.effects.includes('grid')) bgLayer += geometryEngine.getGrid(colors.primary);
-
-    // CSS Variables for dynamic styling
+    // Advanced CSS Construction
     const css = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lato:wght@300;400&family=Playfair+Display:ital,wght@0,600;1,600&family=Rajdhani:wght@600;700&family=Space+Grotesk:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lato:wght@400;700&family=Playfair+Display:wght@400;700&family=Rajdhani:wght@600;700&family=Space+Grotesk:wght@500;700&display=swap');
 
         :root {
-            --primary: ${colors.primary};
-            --accent: ${colors.accent};
-            --bg: ${colors.bg};
-            --text: ${colors.text};
-            --font-h: '${fonts.head}', sans-serif;
-            --font-b: '${fonts.body}', sans-serif;
-            --radius: ${dna.shape === 'rounded' ? '12px' : (dna.shape === 'pill' ? '50px' : '0px')};
+            --primary: ${dna.palette.primary};
+            --bg: ${dna.palette.bg};
+            --text: ${dna.palette.text};
+            --font: '${dna.font}', sans-serif;
         }
 
         body { 
-            background: var(--bg); color: var(--text); font-family: var(--font-b); margin: 0; overflow-x: hidden; 
-            transition: 0.5s; position: relative;
+            background-color: var(--bg); 
+            color: var(--text); 
+            font-family: var(--font); 
+            margin: 0; overflow-x: hidden;
         }
 
-        /* ANIMATIONS */
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes floatOrb { 0% { transform: translate(0,0); } 100% { transform: translate(20px, -20px); } }
-        .reveal { opacity: 0; animation: fadeUp 0.8s forwards; }
-        .delay-1 { animation-delay: 0.2s; }
-        .delay-2 { animation-delay: 0.4s; }
-        .delay-3 { animation-delay: 0.6s; }
+        /* FX LAYERS */
+        ${dna.fx.includes('scanlines') ? `.scanlines { ${designSystem.fx.scanlines} }` : ''}
 
-        nav { padding: 30px 8%; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
-        .logo { font-family: var(--font-h); font-size: 24px; font-weight: 700; color: var(--text); }
-        .nav-link { color: var(--text); padding: 10px 20px; text-decoration: none; opacity: 0.8; }
-        .nav-btn { background: var(--primary); color: ${dna.theme === 'cyber' || dna.theme === 'luxury' || dna.theme === 'creative' ? '#000' : '#fff'}; padding: 12px 25px; border-radius: var(--radius); text-decoration: none; font-weight: 600; }
+        nav {
+            padding: 30px 10%; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid ${dna.theme === 'clean' ? '#eee' : 'rgba(255,255,255,0.1)'};
+            backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-size: 24px; font-weight: 800; letter-spacing: ${dna.theme === 'cyber' ? '2px' : '0'}; text-transform: uppercase; }
 
-        .hero { 
-            min-height: 80vh; display: flex; align-items: center; padding: 0 8%; position: relative; z-index: 5; 
-            text-align: ${dna.layout === 'center' ? 'center' : 'left'};
-            justify-content: ${dna.layout === 'center' ? 'center' : 'space-between'};
-            flex-direction: ${dna.layout === 'center' ? 'column' : 'row'};
+        .btn {
+            background: var(--primary);
+            color: ${dna.theme === 'organic' || dna.theme === 'clean' ? '#fff' : '#000'};
+            padding: 15px 40px; font-weight: bold; text-decoration: none; text-transform: uppercase;
+            display: inline-block; transition: 0.3s;
+            clip-path: ${dna.shape === 'cyber-cut' ? 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' : (dna.shape === 'rounded' ? 'none' : 'none')};
+            border-radius: ${dna.shape === 'rounded' ? '30px' : '0'};
+            transform: ${dna.theme === 'impact' ? 'skew(-10deg)' : 'none'};
+        }
+        .btn:hover { filter: brightness(1.2); letter-spacing: 1px; }
+
+        /* HERO SECTION */
+        .hero {
+            min-height: 85vh; display: flex; align-items: center; padding: 0 10%;
+            position: relative;
+        }
+        .hero-content { flex: 1; z-index: 10; }
+        .hero-visual { flex: 1; display: flex; justify-content: center; position: relative; z-index: 1; }
+        
+        h1 {
+            font-size: clamp(3rem, 6vw, 6rem); line-height: 0.9; margin-bottom: 30px;
+            text-transform: uppercase;
+            ${dna.theme === 'impact' ? 'font-style: italic;' : ''}
         }
         
-        .hero-text { max-width: ${dna.layout === 'center' ? '800px' : '50%'}; }
-        
-        h1 { 
-            font-family: var(--font-h); font-size: clamp(3rem, 5vw, 5rem); line-height: 1.1; margin-bottom: 20px;
-            letter-spacing: ${dna.font === 'tech' ? '2px' : '-1px'};
+        /* HOLLOW TEXT EFFECT FOR CYBER */
+        .hollow {
+            -webkit-text-stroke: 1px var(--primary); color: transparent;
         }
-        
-        .highlight { color: var(--primary); font-style: italic; }
+        .highlight { color: var(--primary); }
 
-        .hero-visual { 
-            position: relative; width: 45%; display: flex; justify-content: center;
-            ${dna.layout === 'center' ? 'width: 100%; margin-top: 50px;' : ''}
+        .hero-visual img {
+            max-width: 120%; 
+            filter: drop-shadow(0 0 50px ${dna.palette.primary}40);
+            animation: float 5s ease-in-out infinite;
         }
-        .hero-visual img { width: 100%; max-width: 500px; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.3)); transform: rotate(-5deg); transition: 0.5s; }
-        .hero-visual img:hover { transform: rotate(0deg) scale(1.05); }
 
-        /* CARDS */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 50px 8%; position: relative; z-index: 5; }
-        .card { 
-            background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: var(--radius);
-            transition: 0.3s;
+        /* GRID/CARDS */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+            margin-top: 60px;
         }
-        .card:hover { transform: translateY(-10px); border-color: var(--primary); }
-        .icon { font-size: 30px; color: var(--primary); margin-bottom: 20px; display: block; }
+        .stat-card {
+            border: 1px solid ${dna.theme === 'clean' ? '#ddd' : 'rgba(255,255,255,0.2)'};
+            padding: 20px;
+            ${dna.shape === 'cyber-cut' ? 'clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); background: rgba(255,255,255,0.03);' : ''} 
+        }
+        .stat-num { font-size: 3rem; font-weight: 800; color: var(--primary); display: block; }
+        .stat-label { font-size: 0.9rem; letter-spacing: 1px; opacity: 0.7; }
+        
+        /* HUD ELEMENTS (Cyber Only) */
+        .hud-line {
+            position: absolute; height: 1px; background: var(--primary); opacity: 0.5;
+            width: 100px;
+        }
+
+        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0); } }
     `;
+
+    // Content Generation
+    let title = "BUILD<br>THE FUTURE";
+    if (dna.theme === 'cyber') title = `DOMINATE<br><span class="hollow">THE FIELD</span>`;
+    if (dna.theme === 'luxury') title = `DEFINING<br><span class="highlight">LUXURY</span>`;
+    if (dna.theme === 'organic') title = `FRESH<br><span class="highlight">NATURAL</span>`;
+
+    // HUD Generation for Cyber
+    const hud = dna.theme === 'cyber' ? `
+        <div class="hud-line" style="top: 15vh; left: 5%;"></div>
+        <div class="hud-line" style="bottom: 15vh; right: 5%;"></div>
+        <div style="position:absolute; top:20vh; right:10%; font-family:monospace; color:var(--primary); opacity:0.6;">SYS.READY // V.3.0</div>
+    ` : '';
 
     const html = `
         <!DOCTYPE html>
         <html>
         <head><style>${css}</style></head>
         <body>
-            ${bgLayer}
-            
-            <nav class="reveal">
-                <div class="logo">${projectName}.</div>
-                <div>
-                    <a href="#" class="nav-link">Work</a>
-                    <a href="#" class="nav-btn">Let's Talk</a>
-                </div>
+            ${dna.fx.includes('scanlines') ? '<div class="scanlines"></div>' : ''}
+            ${hud}
+
+            <nav>
+                <div class="logo">${projectName}</div>
+                <a href="#" class="btn">Login</a>
             </nav>
 
             <section class="hero">
-                <div class="hero-text reveal delay-1">
-                    <h1>We craft <span class="highlight">unique</span> digital experiences.</h1>
-                    <p style="font-size: 1.2rem; opacity: 0.7; margin-bottom: 30px;">
-                        Driven by data, powered by design. We help brands stand out in the noise.
+                <div class="hero-content">
+                    <h1>${title}</h1>
+                    <p style="font-size: 1.2rem; opacity: 0.8; max-width: 500px; margin-bottom: 40px; border-left: 2px solid var(--primary); padding-left: 20px;">
+                        The next generation platform designed for those who demand excellence. Generated via Design DNA.
                     </p>
-                    <a href="#" class="nav-btn">Start Project</a>
-                </div>
-                
-                <div class="hero-visual reveal delay-2">
-                    ${dna.image ? `<img src="${dna.image}">` :
-            `<div style="${geometryEngine.getOrb(colors.primary)} opacity:0.6;"></div>
-                       <div style="${geometryEngine.getOrb(colors.accent)} right:0; bottom:0; animation-delay: -5s;"></div>`
-        }
-                </div>
-            </section>
+                    <a href="#" class="btn">GET STARTED</a>
 
-            <section class="grid reveal delay-3">
-                <div class="card">
-                    <span class="icon">✨</span>
-                    <h3>Visual Identity</h3>
-                    <p style="opacity:0.7">Crafting memorable brands that speak to your audience.</p>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-num">5M+</span>
+                            <span class="stat-label">USERS</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-num">0.1s</span>
+                            <span class="stat-label">LATENCY</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="card">
-                    <span class="icon">🚀</span>
-                    <h3>Growth Strategy</h3>
-                    <p style="opacity:0.7">Data-driven campaigns to scale your business fast.</p>
-                </div>
-                <div class="card">
-                    <span class="icon">💎</span>
-                    <h3>Premium UI/UX</h3>
-                    <p style="opacity:0.7">Interfaces that feel as good as they look.</p>
+
+                <div class="hero-visual">
+                    ${dna.asset ? `<img src="${dna.asset}">` : ''}
                 </div>
             </section>
         </body>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visions AI | Next-Gen Web Builder</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Main App Container -->
+    <div class="app-container">
+        
+        <!-- Sidebar Controls -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <h1>VISIONS<span class="ai-badge">AI</span></h1>
+                <p>Generative Design Engine</p>
+            </div>
+
+            <div class="control-group">
+                <label>PROJECT NAME</label>
+                <input type="text" id="projectName" value="My Future Site" placeholder="e.g. CyberStore">
+            </div>
+
+            <div class="control-group">
+                <label>DESCRIBE YOUR VISION</label>
+                <textarea id="aiPrompt" placeholder="e.g. A futuristic gaming store with neon vibes... or A cozy coffee shop for students..." style="width: 100%; height: 100px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: white; padding: 12px; font-family: inherit; resize: none;"></textarea>
+            </div>
+
+            <div class="control-group">
+                <label>STRUCTURE BLOCKS</label>
+                <div class="toggle-list">
+                    <label class="toggle-item">
+                        <input type="checkbox" id="incHero" checked> Hero Section
+                    </label>
+                    <label class="toggle-item">
+                        <input type="checkbox" id="incFeatures" checked> Bento Features
+                    </label>
+                    <label class="toggle-item">
+                        <input type="checkbox" id="incPricing"> Pricing Grid
+                    </label>
+                    <label class="toggle-item">
+                        <input type="checkbox" id="incFooter" checked> Minimal Footer
+                    </label>
+                </div>
+            </div>
+
+            <button class="generate-btn" onclick="generateSite()">
+                ⚡ GENERATE SITE
+            </button>
+            <button class="download-btn" onclick="downloadCode()">
+                💾 DOWNLOAD CODE
+            </button>
+        </aside>
+
+        <!-- Preview Area -->
+        <main class="preview-area">
+            <div class="preview-header">
+                <span>LIVE PREVIEW</span>
+                <div class="device-toggles">
+                    <button class="active">Desktop</button>
+                    <button>Mobile</button>
+                </div>
+            </div>
+            
+            <!-- The Magic Canvas where code is injected -->
+            <div class="frame-container">
+                <iframe id="previewFrame"></iframe>
+            </div>
+        </main>
+
+    </div>
+
+    <script src="generator.js"></script>
+</body>
+</html>

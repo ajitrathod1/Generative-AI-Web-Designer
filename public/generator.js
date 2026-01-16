@@ -54,6 +54,14 @@ const AI_Brain = {
             typography: { head: 'Montserrat', body: 'Poppins', googleFonts: 'family=Montserrat:wght@700;900&family=Poppins:wght@300;400;600' },
             ui: { rounded: '8px', border: '1px solid #333', shadow: '0 10px 30px rgba(0,0,0,0.5)', glass: false },
             tech: { framework: 'vanilla', animations: 'reveal-scroll', effects: ['dark-mode', 'image-parallax'] }
+        },
+        'fitness-energy': {
+            keywords: ['gym', 'fitness', 'workout', 'sport', 'health', 'train', 'muscle', 'run', 'active', 'yoga'],
+            vibe: 'fitness-energy',
+            palette: { bg: '#111111', primary: '#ff5400', secondary: '#ffffff', text: '#ffffff', accent: '#ff5400', surface: '#1e1e1e' },
+            typography: { head: 'Oswald', body: 'Roboto', googleFonts: 'family=Oswald:wght@700&family=Roboto:wght@400;500;700' },
+            ui: { rounded: '4px', border: 'none', shadow: '0 10px 40px rgba(255, 84, 0, 0.3)', glass: false },
+            tech: { framework: 'vanilla', animations: 'fade-up', effects: ['slant-sections'] }
         }
     },
 
@@ -142,7 +150,9 @@ const AI_Brain = {
             'gaming-action': ['DOMINATE THE BATTLEFIELD', 'UNLEASH YOUR POWER', 'VICTORY AWAITS'],
             'ai-neon': ['THE FUTURE IS NOW', 'NEXT-GEN INTELLIGENCE', 'POWERED BY AI'],
             'ecommerce-modern': ['DISCOVER YOUR STYLE', 'SHOP THE COLLECTION', 'ELEVATE YOUR WARDROBE'],
-            'creative-portfolio': ['CREATIVE EXCELLENCE', 'DESIGN THAT INSPIRES', 'MY WORK, MY STORY']
+            'ecommerce-modern': ['DISCOVER YOUR STYLE', 'SHOP THE COLLECTION', 'ELEVATE YOUR WARDROBE'],
+            'creative-portfolio': ['CREATIVE EXCELLENCE', 'DESIGN THAT INSPIRES', 'MY WORK, MY STORY'],
+            'fitness-energy': ['UNLEASH YOUR POTENTIAL', 'TRAIN LIKE A PRO', 'BUILD YOUR LEGACY']
         };
 
         const words = prompt.split(' ').slice(0, 3).map(w => w.toUpperCase()).join(' ');
@@ -156,7 +166,9 @@ const AI_Brain = {
             'gaming-action': 'Join millions of players worldwide. Compete, conquer, and claim your throne.',
             'ai-neon': 'Harness the power of artificial intelligence to transform your business.',
             'ecommerce-modern': 'Premium quality, curated collections, delivered to your doorstep.',
-            'creative-portfolio': 'Crafting digital experiences that captivate and inspire audiences.'
+            'ecommerce-modern': 'Premium quality, curated collections, delivered to your doorstep.',
+            'creative-portfolio': 'Crafting digital experiences that captivate and inspire audiences.',
+            'fitness-energy': 'Transform your body and mind with world-class training and state-of-the-art facilities.'
         };
         return templates[vibe] || 'Experience innovation like never before. Built for excellence.';
     },
@@ -205,6 +217,12 @@ const AI_Brain = {
                 { icon: 'code', title: 'Web Development', desc: 'Building responsive, high-performance websites.' },
                 { icon: 'mobile', title: 'UI/UX Design', desc: 'Crafting intuitive user experiences.' },
                 { icon: 'video', title: 'Motion Graphics', desc: 'Bringing stories to life through animation.' }
+            ],
+            'fitness-energy': [
+                { icon: 'dumbbell', title: 'State-of-the-art Gym', desc: 'Premium equipment for every muscle group.' },
+                { icon: 'heart-pulse', title: 'Personal Training', desc: 'Expert coaches to guide your fitness journey.' },
+                { icon: 'carrot', title: 'Nutrition Plans', desc: 'Customized diet plans to fuel your performance.' },
+                { icon: 'people-group', title: 'Group Classes', desc: 'High-energy classes to keep you motivated.' }
             ]
         };
         return featureSets[vibe] || featureSets['saas-clean'];
@@ -236,97 +254,139 @@ const AI_Brain = {
         return 'Innovation delivered, excellence guaranteed.';
     },
 
-    // Real AI Implementation (Google Gemini)
+    // Real AI Implementation (Universal: OpenAI + Gemini)
     fetchRealAI: async (prompt, key) => {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+        // --- CONTEXTUAL DESIGN INTELLIGENCE ---
+        let designGuidance = "";
+        try {
+            if (typeof window.getDesignContext === 'function') {
+                const ctx = window.getDesignContext(prompt);
+                if (ctx) {
+                    designGuidance = `
+                        IMPORTANT - USE THIS DESIGN REFERENCE:
+                        - Style Vibe: ${ctx.vibe}
+                        - Visual Context: ${ctx.structure_hint}
+                        - Color Palette: ${JSON.stringify(ctx.palette)}
+                        - Typography: ${JSON.stringify(ctx.typography)}
+                        - UI Definition: ${JSON.stringify(ctx.ui)}
+                        
+                        Use these specific design values in your JSON response to ensure high-quality aesthetics.
+                     `;
+                }
+            }
+        } catch (e) { console.warn("Design Context Error:", e); }
+
+        // 1. Check for OpenAI Key (starts with 'sk-')
+        if (key.trim().startsWith('sk-')) {
+            console.log('🧠 Detected OpenAI Key. Switching to GPT-4o...');
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o",
+                        messages: [
+                            { role: "system", content: "You are a UI/UX expert. Generate a JSON design spec for a landing page. Output JSON only. " + designGuidance },
+                            {
+                                role: "user", content: `Analyze this request: "${prompt}". 
+                            
+                            RETURN JSON with this structure:
+                            {
+                                "vibe": "string",
+                                "palette": { "bg": "hex", "primary": "hex", "secondary": "hex", "text": "hex", "accent": "hex", "surface": "hex" },
+                                "typography": { "head": "Google Font", "body": "Google Font", "googleFonts": "family=Font:wght@weights&display=swap" },
+                                "ui": { "rounded": "px", "border": "css", "shadow": "css", "glass": boolean },
+                                "tech": { "framework": "vanilla", "animations": "fade-slide", "effects": ["effect"] },
+                                "content": {
+                                    "brand": "Brand",
+                                    "hero": { "headline": "Head", "subhead": "Sub", "cta": "Btn", "ctaSecondary": "Btn2" },
+                                    "features": [{ "icon": "star", "title": "Feat", "desc": "Desc" }],
+                                    "testimonials": [{ "name": "Name", "role": "Role", "text": "Quote", "rating": 5 }],
+                                    "pricing": [{ "name": "Plan", "price": "$10", "period": "/mo", "features": ["f1"], "highlight": false }],
+                                    "footer": { "tagline": "Tag", "links": { "product": [], "company": [], "legal": [] }, "social": ["twitter"] }
+                                },
+                                "sections": { "hero": true, "features": true, "testimonials": true, "pricing": true, "gallery": false, "cta": true, "footer": true },
+                                "imagePrompts": { "background": "midjourney prompt", "hero": "midjourney prompt" }
+                            }` }
+                        ],
+                        response_format: { type: "json_object" }
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error?.message || 'OpenAI API Failed');
+
+                const parsed = JSON.parse(data.choices[0].message.content);
+                parsed.mode = 'ONLINE_GPT_4o';
+                return parsed;
+            } catch (e) {
+                throw new Error(`OpenAI Failed: ${e.message}`);
+            }
+        }
+
+        // 2. Default: Google Gemini (Looping Fallback)
+        const models = ['gemini-1.5-flash', 'gemini-1.5-flash-001', 'gemini-1.5-pro', 'gemini-pro', 'gemini-1.0-pro'];
+        let lastError = null;
 
         const systemInstruction = `
-You are a SENIOR FULL-STACK DEVELOPER & UI/UX ARCHITECT with 10+ years of experience.
+        You are a SENIOR FULL-STACK DEVELOPER & UI/UX ARCHITECT.
+        ${designGuidance}
+        Analyze the user's landing page request and generate a COMPLETE, PROFESSIONAL design specification.
+        RETURN ONLY VALID JSON (no markdown).
+        {
+            "vibe": "string (saas-clean | fantasy-cinematic | gaming-action | ai-neon | ecommerce-modern | creative-portfolio)",
+            "palette": { "bg": "hex", "primary": "hex", "secondary": "hex", "text": "hex", "accent": "hex", "surface": "hex" },
+            "typography": { "head": "Google Font", "body": "Google Font", "googleFonts": "family=Font:wght@weights&display=swap" },
+            "ui": { "rounded": "px", "border": "css", "shadow": "css", "glass": boolean },
+            "tech": { "framework": "vanilla", "animations": "fade-slide", "effects": ["effect"] },
+            "content": {
+                "brand": "Brand",
+                "hero": { "headline": "Head", "subhead": "Sub", "cta": "Btn", "ctaSecondary": "Btn2" },
+                "features": [{ "icon": "star", "title": "Feat", "desc": "Desc" }],
+                "testimonials": [{ "name": "Name", "role": "Role", "text": "Quote", "rating": 5 }],
+                "pricing": [{ "name": "Plan", "price": "$10", "period": "/mo", "features": ["f1"], "highlight": false }],
+                "footer": { "tagline": "Tag", "links": { "product": [], "company": [], "legal": [] }, "social": ["twitter"] }
+            },
+            "sections": { "hero": true, "features": true, "testimonials": true, "pricing": true, "gallery": false, "cta": true, "footer": true },
+            "imagePrompts": { "background": "midjourney prompt", "hero": "midjourney prompt" }
+        }`;
 
-Analyze the user's landing page request and generate a COMPLETE, PROFESSIONAL design specification.
+        for (const model of models) {
+            try {
+                console.log(`🧠 Trying AI Model: ${model}...`);
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
-THINK LIKE A REAL DEVELOPER:
-1. What is the business goal? (Lead gen, sales, branding, etc.)
-2. What sections are ESSENTIAL for this type of page?
-3. What tech stack fits best? (animations, effects, frameworks)
-4. What color psychology applies?
-5. What content will convert visitors?
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: systemInstruction + "\n\nUser Request: " + prompt }]
+                        }]
+                    })
+                });
 
-RETURN ONLY VALID JSON (no markdown):
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error?.message || `Model ${model} failed`);
+                if (!data.candidates || !data.candidates[0]) throw new Error('No response');
 
-{
-    "vibe": "string (saas-clean | fantasy-cinematic | gaming-action | ai-neon | ecommerce-modern | creative-portfolio)",
-    "palette": { "bg": "hex", "primary": "hex", "secondary": "hex", "text": "hex", "accent": "hex", "surface": "hex" },
-    "typography": { 
-        "head": "Google Font", 
-        "body": "Google Font", 
-        "googleFonts": "family=Font:wght@weights&display=swap" 
-    },
-    "ui": { "rounded": "px", "border": "css", "shadow": "css", "glass": boolean },
-    "tech": { "framework": "vanilla|react", "animations": "fade-slide|parallax|glitch", "effects": ["effect1", "effect2"] },
-    "content": {
-        "brand": "Brand Name (1-2 words, creative)",
-        "hero": { 
-            "headline": "Powerful, benefit-driven headline (5-8 words)", 
-            "subhead": "Compelling value proposition (15-20 words)", 
-            "cta": "Action button text", 
-            "ctaSecondary": "Secondary action" 
-        },
-        "features": [
-            { "icon": "fontawesome-icon-name", "title": "Feature", "desc": "Benefit-focused description" }
-        ],
-        "testimonials": [
-            { "name": "Full Name", "role": "Title, Company", "text": "Specific, credible quote", "rating": 5 }
-        ],
-        "pricing": [
-            { "name": "Plan", "price": "$XX", "period": "/month", "features": ["feature"], "highlight": boolean }
-        ],
-        "footer": {
-            "tagline": "Memorable company tagline",
-            "links": { "product": [], "company": [], "legal": [] },
-            "social": ["platform1", "platform2"]
+                const rawText = data.candidates[0].content.parts[0].text;
+                const jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(jsonStr);
+                parsed.mode = `ONLINE_GEMINI_AI (${model})`;
+
+                console.log(`✅ Success with model: ${model}`);
+                return parsed;
+
+            } catch (e) {
+                console.warn(`⚠️ Model ${model} failed:`, e.message);
+                lastError = e;
+            }
         }
-    },
-    "sections": {
-        "hero": true,
-        "features": boolean,
-        "testimonials": boolean,
-        "pricing": boolean,
-        "gallery": boolean,
-        "cta": boolean,
-        "footer": true
-    },
-    "imagePrompts": {
-        "background": "Detailed Midjourney-style prompt",
-        "hero": "Detailed Midjourney-style prompt (no text in image)"
-    }
-}
-
-BE CREATIVE. THINK CONVERSION. DESIGN FOR IMPACT.
-`;
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: systemInstruction + "\n\nUser Request: " + prompt }]
-                }]
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error?.message || 'API Request Failed');
-        }
-
-        const rawText = data.candidates[0].content.parts[0].text;
-
-        const jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(jsonStr);
-        parsed.mode = 'ONLINE_GEMINI_AI';
-        return parsed;
+        throw lastError || new Error("All Gemini models failed. API Key might be invalid.");
     }
 };
 
@@ -363,10 +423,17 @@ const AI_Artist = {
             'creative-portfolio': {
                 bg: "dark minimalist abstract gradient, modern design background, 8k",
                 hero: "creative workspace setup, macbook, design tools, modern aesthetic, professional photography"
+            },
+            'fitness-energy': {
+                bg: "dark gym atmosphere, weights, smoke, dramatic lighting, orange glow, 8k",
+                hero: "fitness athlete working out, dynamic action shot, gym equipment, high contrast, cinematic lighting"
             }
         };
 
-        const prompts = promptMap[spec.vibe] || promptMap['saas-clean'];
+        const prompts = promptMap[spec.vibe] || {
+            bg: `modern ${spec.vibe.replace('-', ' ')} background, high quality, 4k`,
+            hero: `${spec.content.hero.headline} related visual, professional photography, high quality, 8k`
+        };
 
         return {
             background: baseUrl + encodeURIComponent(prompts.bg) + params,
@@ -1049,10 +1116,7 @@ async function startAIPipeline() {
     const apiKey = document.getElementById('apiKey').value;
 
     const options = {
-        hero: document.getElementById('incHero').checked,
-        features: document.getElementById('incFeatures').checked,
-        pricing: document.getElementById('incPricing').checked,
-        footer: document.getElementById('incFooter').checked
+        hero: true, features: true, pricing: true, footer: true
     };
 
     terminal.style.display = 'block';
@@ -1143,10 +1207,7 @@ window.saveProject = () => {
         name: projectName,
         prompt: prompt,
         apiKey: apiKey,
-        hero: document.getElementById('incHero').checked,
-        features: document.getElementById('incFeatures').checked,
-        pricing: document.getElementById('incPricing').checked,
-        footer: document.getElementById('incFooter').checked,
+        hero: true, features: true, pricing: true, footer: true,
         timestamp: new Date().toISOString()
     };
 
@@ -1194,10 +1255,7 @@ window.loadProject = (index) => {
         document.getElementById('projectName').value = project.name;
         document.getElementById('aiPrompt').value = project.prompt;
         document.getElementById('apiKey').value = project.apiKey || '';
-        document.getElementById('incHero').checked = project.hero;
-        document.getElementById('incFeatures').checked = project.features;
-        document.getElementById('incPricing').checked = project.pricing;
-        document.getElementById('incFooter').checked = project.footer;
+        // Structure prefs handled by AI
 
         closeLoadModal();
         alert(`✅ Project "${project.name}" loaded!`);
@@ -1379,10 +1437,7 @@ window.saveProject = async () => {
         name: projectName,
         prompt: prompt,
         apiKey: apiKey,
-        hero: document.getElementById('incHero').checked,
-        features: document.getElementById('incFeatures').checked,
-        pricing: document.getElementById('incPricing').checked,
-        footer: document.getElementById('incFooter').checked
+        hero: true, features: true, pricing: true, footer: true
     };
 
     try {
@@ -1439,10 +1494,7 @@ window.loadProject = (index) => {
         document.getElementById('projectName').value = project.name;
         document.getElementById('aiPrompt').value = project.prompt;
         document.getElementById('apiKey').value = project.apiKey || '';
-        document.getElementById('incHero').checked = project.hero;
-        document.getElementById('incFeatures').checked = project.features;
-        document.getElementById('incPricing').checked = project.pricing;
-        document.getElementById('incFooter').checked = project.footer;
+        // Structure prefs handled by AI
         closeLoadModal();
         alert(`✅ Loaded "${project.name}" from Backend!`);
     }
@@ -1506,5 +1558,134 @@ window.clearHistory = async () => {
     if (confirm('Clear entire database history?')) {
         await fetch(`${API_URL}/history`, { method: 'DELETE' });
         loadHistory();
+    }
+};
+
+
+// ==========================================
+// 🚀 NEW FEATURES: FULL SCREEN & CHAT EDIT
+// ==========================================
+
+// === FULL SCREEN LOGIC ===
+window.toggleFullScreen = () => {
+    document.querySelector('.app-container').classList.toggle('fullscreen-mode');
+};
+
+// === AI CHAT EDIT LOGIC ===
+window.handleEditInput = (e) => {
+    if (e.key === 'Enter') submitEditRequest();
+};
+
+window.submitEditRequest = async () => {
+    const input = document.getElementById('editPromptInput');
+    const prompt = input.value.trim();
+    if (!prompt) return;
+
+    // UI Updates
+    const history = document.getElementById('editChatHistory');
+    history.innerHTML += `<div class='user-msg'>${prompt}</div>`;
+    history.scrollTop = history.scrollHeight;
+    input.value = '';
+
+    // Add loading bubble
+    const loadingId = 'loading-' + Date.now();
+    history.innerHTML += `<div id='${loadingId}' class='ai-msg'>Thinking... 🧠</div>`;
+
+    try {
+        const frame = document.getElementById('previewFrame');
+        // Get code (Handle empty frame case)
+        let currentCode = "";
+        try {
+            currentCode = frame.contentWindow.document.documentElement.outerHTML;
+        } catch (e) { currentCode = "<html><body></body></html>"; }
+
+        const apiKey = document.getElementById('apiKey').value;
+
+        // Use AI to edit code
+        const updatedCode = await AI_Brain.editCode(currentCode, prompt, apiKey);
+
+        // Apply Changes
+        const doc = frame.contentWindow.document;
+        doc.open(); doc.write(updatedCode); doc.close();
+        document.getElementById('codeTextarea').value = updatedCode; // Sync raw editor
+
+        // Success Msg
+        document.getElementById(loadingId).textContent = "Done! I've updated the design. 🎨";
+
+        // Save to History automatically? Maybe later.
+
+    } catch (e) {
+        document.getElementById(loadingId).textContent = "Error: " + e.message;
+        console.error(e);
+    }
+};
+
+// Add editCode capability to Brain
+AI_Brain.editCode = async (code, prompt, key) => {
+    if (!key || key.length < 5) throw new Error("Please enter your API Key first!");
+
+    const systemInstruction = `
+    You are an expert Frontend Developer.
+    The user wants to EDIT the following HTML code.
+    User Request: "${prompt}"
+    
+    Rules:
+    1. Return ONLY the updated full HTML code.
+    2. Do NOT use markdown code blocks.
+    3. Maintain all existing scripts and styles unless asked to change.
+    4. Be creative but preserve the layout unless asked to redesign.
+    `;
+
+    const isOpenAI = key.startsWith('sk-');
+
+    if (isOpenAI) {
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+            body: JSON.stringify({
+                model: "gpt-4o",
+                messages: [
+                    { role: "system", content: "You are a web developer. Return only HTML code." },
+                    {
+                        role: "user", content: `CODE:
+${code.substring(0, 15000)}
+
+INSTRUCTION: ${prompt}
+
+OUTPUT FULL UPDATED HTML:` }
+                ]
+            })
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error.message);
+        return data.choices[0].message.content.replace(/```html/g, '').replace(/```/g, '');
+    } else {
+        // Gemini (Try robust models)
+        // We will try gemini-1.5-flash then pro
+        const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+        let lastError = null;
+
+        for (const model of models) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: systemInstruction + "\n\nCODE:\n" + code.substring(0, 30000) }]
+                        }]
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error?.message || 'Failed');
+
+                return data.candidates[0].content.parts[0].text.replace(/```html/g, '').replace(/```/g, '');
+            } catch (e) {
+                lastError = e;
+                console.warn(`Edit Model ${model} failed`, e);
+            }
+        }
+        throw lastError;
     }
 };

@@ -47,25 +47,7 @@
 
                 <div class="control-group">
                     <label>DESCRIBE YOUR VISION</label>
-                    <textarea id="aiPrompt" placeholder="e.g. A futuristic gaming store with neon vibes... or A cozy coffee shop for students..." style="width: 100%; height: 100px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; padding: 14px; font-family: inherit; resize: none;"></textarea>
-                </div>
-
-                <div class="control-group">
-                    <label>STRUCTURE BLOCKS</label>
-                    <div class="toggle-list">
-                        <label class="toggle-item">
-                            <input type="checkbox" id="incHero" checked> Hero Section
-                        </label>
-                        <label class="toggle-item">
-                            <input type="checkbox" id="incFeatures" checked> Bento Features
-                        </label>
-                        <label class="toggle-item">
-                            <input type="checkbox" id="incPricing"> Pricing Grid
-                        </label>
-                        <label class="toggle-item">
-                            <input type="checkbox" id="incFooter" checked> Minimal Footer
-                        </label>
-                    </div>
+                    <textarea id="aiPrompt" placeholder="e.g. A futuristic gaming store with neon vibes... or A cozy coffee shop for students..." style="width: 100%; height: 120px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; padding: 14px; font-family: inherit; resize: none;"></textarea>
                 </div>
 
                 <button class="generate-btn" onclick="generateSite()">
@@ -139,7 +121,7 @@
         </aside>
 
         <!-- Preview Area -->
-        <main class="preview-area">
+        <main class="preview-area" id="mainPreview">
             <div class="preview-header">
                 <span>LIVE PREVIEW</span>
                 <div class="preview-actions">
@@ -147,11 +129,14 @@
                         <button class="active">Desktop</button>
                         <button>Mobile</button>
                     </div>
+                    <button class="icon-btn" onclick="toggleFullScreen()" title="Full Screen">
+                        <i class="fas fa-expand"></i>
+                    </button>
                     <button class="icon-btn" onclick="copyCode()" title="Copy Code">
                         <i class="fas fa-copy"></i>
                     </button>
-                    <button class="icon-btn" onclick="toggleCodeEditor()" title="Edit Code">
-                        <i class="fas fa-code"></i>
+                    <button class="icon-btn" onclick="toggleCodeEditor()" title="Edit & Chat">
+                        <i class="fas fa-robot"></i>
                     </button>
                     <button class="icon-btn" onclick="refreshPreview()" title="Refresh">
                         <i class="fas fa-rotate-right"></i>
@@ -167,13 +152,33 @@
             <!-- AI Console Output -->
             <div id="ai-terminal"></div>
 
-            <!-- Code Editor (Hidden by default) -->
+            <!-- AI Chat Editor (Replaces simple Code Editor) -->
             <div id="codeEditor" class="code-editor">
                 <div class="editor-header">
-                    <span>CODE EDITOR</span>
-                    <button onclick="applyCodeChanges()" class="apply-btn">Apply Changes</button>
+                    <span>AI DESIGN ASSISTANT</span>
+                    <button onclick="toggleCodeEditor()" class="close-btn">&times;</button>
                 </div>
-                <textarea id="codeTextarea" spellcheck="false"></textarea>
+                
+                <div class="ai-edit-container">
+                    <!-- Chat Area -->
+                    <div id="editChatHistory" class="edit-chat-history">
+                        <div class="system-msg">Hi! I can edit this page for you. Just tell me what to change. e.g. "Make the header blue" or "Add a contact section".</div>
+                    </div>
+                    
+                    <!-- Input Area -->
+                    <div class="edit-input-area">
+                        <input type="text" id="editPromptInput" placeholder="Type your edit request..." onkeypress="handleEditInput(event)">
+                        <button onclick="submitEditRequest()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hidden Code View (Toggleable if needed, but keeping simple for now) -->
+                <textarea id="codeTextarea" style="display: none;"></textarea>
+                <div class="editor-footer">
+                    <button onclick="toggleRawCode()" class="secondary-btn" style="font-size: 10px; padding: 5px 10px;">View Raw Code</button>
+                </div>
             </div>
         </main>
 
@@ -192,6 +197,7 @@
         </div>
     </div>
 
+    <script src="knowledge_base.js"></script>
     <script src="generator.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
 </body>

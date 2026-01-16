@@ -65,6 +65,7 @@ const AI_Brain = {
                 return await AI_Brain.fetchRealAI(prompt, apiKey);
             } catch (e) {
                 console.error("AI Fetch Failed, using offline intelligence:", e);
+                alert(`⚠️ AI Error: ${e.message || 'Unknown'}\nUsing Offline Mode.`);
             }
         }
 
@@ -237,7 +238,7 @@ const AI_Brain = {
 
     // Real AI Implementation (Google Gemini)
     fetchRealAI: async (prompt, key) => {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
 
         const systemInstruction = `
 You are a SENIOR FULL-STACK DEVELOPER & UI/UX ARCHITECT with 10+ years of experience.
@@ -315,6 +316,11 @@ BE CREATIVE. THINK CONVERSION. DESIGN FOR IMPACT.
         });
 
         const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error?.message || 'API Request Failed');
+        }
+
         const rawText = data.candidates[0].content.parts[0].text;
 
         const jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -1356,3 +1362,149 @@ window.generateSite = async function () {
     saveToHistory(prompt, theme, code);
 };
 
+// ==========================================
+// 🚀 FULL STACK API INTEGRATION
+// ==========================================
+const API_URL = '/api';
+
+console.log('🔌 Connecting to Visions AI Backend...');
+
+// 1. Save Project to Server
+window.saveProject = async () => {
+    const projectName = document.getElementById('projectName').value || 'Untitled';
+    const prompt = document.getElementById('aiPrompt').value;
+    const apiKey = document.getElementById('apiKey').value;
+
+    const project = {
+        name: projectName,
+        prompt: prompt,
+        apiKey: apiKey,
+        hero: document.getElementById('incHero').checked,
+        features: document.getElementById('incFeatures').checked,
+        pricing: document.getElementById('incPricing').checked,
+        footer: document.getElementById('incFooter').checked
+    };
+
+    try {
+        const res = await fetch(`${API_URL}/projects`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(project)
+        });
+
+        if (res.ok) alert(`✅ Project "${projectName}" saved to Server DB!`);
+        else throw new Error('Failed');
+    } catch (e) {
+        alert('❌ Server Error: Is Node.js running?');
+        console.error(e);
+    }
+};
+
+// 2. Load Projects from Server
+window.showLoadModal = async () => {
+    const modal = document.getElementById('loadModal');
+    const list = document.getElementById('savedProjectsList');
+
+    try {
+        const res = await fetch(`${API_URL}/projects`);
+        const projects = await res.json();
+
+        window.currentProjects = projects;
+
+        if (projects.length === 0) {
+            list.innerHTML = '<p style="opacity: 0.5; text-align: center; padding: 20px;">No saved projects in Database</p>';
+        } else {
+            list.innerHTML = projects.map((proj, idx) => `
+                <div class="saved-project-item" onclick="loadProject(${idx})">
+                    <div class="saved-project-info">
+                        <h4>${proj.name}</h4>
+                        <p>${new Date(proj.timestamp).toLocaleString()}</p>
+                    </div>
+                    <button class="delete-project-btn" onclick="event.stopPropagation(); deleteProject(${proj.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+    } catch (e) {
+        list.innerHTML = '<p style="color: #ff4444; text-align: center; padding: 20px;">❌ Connection Failed<br><small>Run: node server.js</small></p>';
+    }
+
+    modal.classList.add('active');
+};
+
+window.loadProject = (index) => {
+    const project = window.currentProjects[index];
+    if (project) {
+        document.getElementById('projectName').value = project.name;
+        document.getElementById('aiPrompt').value = project.prompt;
+        document.getElementById('apiKey').value = project.apiKey || '';
+        document.getElementById('incHero').checked = project.hero;
+        document.getElementById('incFeatures').checked = project.features;
+        document.getElementById('incPricing').checked = project.pricing;
+        document.getElementById('incFooter').checked = project.footer;
+        closeLoadModal();
+        alert(`✅ Loaded "${project.name}" from Backend!`);
+    }
+};
+
+window.deleteProject = async (id) => {
+    if (confirm('Permanently delete from database?')) {
+        await fetch(`${API_URL}/projects/${id}`, { method: 'DELETE' });
+        showLoadModal();
+    }
+};
+
+// 3. History from Server
+window.loadHistory = async () => {
+    const list = document.getElementById('historyList');
+    try {
+        const res = await fetch(`${API_URL}/history`);
+        const history = await res.json();
+
+        window.currentHistory = history;
+        if (history.length === 0) {
+            list.innerHTML = '<p style="opacity: 0.5; text-align: center; padding: 20px;">No history</p>';
+        } else {
+            list.innerHTML = history.slice().reverse().map((item, idx) => `
+                <div class="history-item" onclick="loadHistoryItem(${history.length - 1 - idx})">
+                    <div class="history-item-title">${item.prompt.substring(0, 40)}...</div>
+                    <div class="history-item-meta">
+                        <span>${item.theme}</span>
+                        <span>${new Date(item.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (e) {
+        list.innerHTML = '<p style="opacity: 0.5; text-align: center;">Server Offline</p>';
+    }
+};
+
+window.loadHistoryItem = (index) => {
+    const item = window.currentHistory[index];
+    if (item) {
+        const frame = document.getElementById('previewFrame');
+        const doc = frame.contentWindow.document;
+        doc.open(); doc.write(item.code); doc.close();
+        document.getElementById('aiPrompt').value = item.prompt;
+        document.querySelectorAll('.tab-btn')[0].click();
+    }
+};
+
+window.saveToHistory = async (prompt, theme, code) => {
+    try {
+        await fetch(`${API_URL}/history`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, theme, code })
+        });
+    } catch (e) { console.error('History save failed'); }
+};
+
+window.clearHistory = async () => {
+    if (confirm('Clear entire database history?')) {
+        await fetch(`${API_URL}/history`, { method: 'DELETE' });
+        loadHistory();
+    }
+};

@@ -19,55 +19,143 @@
                 <p>Generative Design Engine</p>
             </div>
 
-            <div class="control-group">
-                <label>AI MODEL KEY (GEMINI/OPENAI)</label>
-                <input type="password" id="apiKey" placeholder="Paste API Key Here (Optional)" style="border-color: var(--accent);">
-                <small style="color: var(--text-muted); font-size: 10px; margin-top: 5px; display: block;">Leave empty to use built-in offline logic.</small>
+            <!-- Tab Navigation -->
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('create')">
+                    <i class="fas fa-wand-magic-sparkles"></i> Create
+                </button>
+                <button class="tab-btn" onclick="switchTab('templates')">
+                    <i class="fas fa-layer-group"></i> Templates
+                </button>
+                <button class="tab-btn" onclick="switchTab('history')">
+                    <i class="fas fa-clock-rotate-left"></i> History
+                </button>
             </div>
 
-            <div class="control-group">
-                <label>PROJECT NAME</label>
-                <input type="text" id="projectName" value="My Future Site" placeholder="e.g. CyberStore">
-            </div>
+            <!-- CREATE TAB -->
+            <div id="tab-create" class="tab-content active">
+                <div class="control-group">
+                    <label>AI MODEL KEY (GEMINI/OPENAI)</label>
+                    <input type="password" id="apiKey" placeholder="Paste API Key Here (Optional)" style="border-color: var(--accent-solid);">
+                    <small style="color: var(--text-muted); font-size: 10px; margin-top: 5px; display: block;">Leave empty to use built-in offline logic.</small>
+                </div>
 
-            <div class="control-group">
-                <label>DESCRIBE YOUR VISION</label>
-                <textarea id="aiPrompt" placeholder="e.g. A futuristic gaming store with neon vibes... or A cozy coffee shop for students..." style="width: 100%; height: 100px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: white; padding: 12px; font-family: inherit; resize: none;"></textarea>
-            </div>
+                <div class="control-group">
+                    <label>PROJECT NAME</label>
+                    <input type="text" id="projectName" value="My Future Site" placeholder="e.g. CyberStore">
+                </div>
 
-            <div class="control-group">
-                <label>STRUCTURE BLOCKS</label>
-                <div class="toggle-list">
-                    <label class="toggle-item">
-                        <input type="checkbox" id="incHero" checked> Hero Section
-                    </label>
-                    <label class="toggle-item">
-                        <input type="checkbox" id="incFeatures" checked> Bento Features
-                    </label>
-                    <label class="toggle-item">
-                        <input type="checkbox" id="incPricing"> Pricing Grid
-                    </label>
-                    <label class="toggle-item">
-                        <input type="checkbox" id="incFooter" checked> Minimal Footer
-                    </label>
+                <div class="control-group">
+                    <label>DESCRIBE YOUR VISION</label>
+                    <textarea id="aiPrompt" placeholder="e.g. A futuristic gaming store with neon vibes... or A cozy coffee shop for students..." style="width: 100%; height: 100px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; padding: 14px; font-family: inherit; resize: none;"></textarea>
+                </div>
+
+                <div class="control-group">
+                    <label>STRUCTURE BLOCKS</label>
+                    <div class="toggle-list">
+                        <label class="toggle-item">
+                            <input type="checkbox" id="incHero" checked> Hero Section
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="incFeatures" checked> Bento Features
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="incPricing"> Pricing Grid
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="incFooter" checked> Minimal Footer
+                        </label>
+                    </div>
+                </div>
+
+                <button class="generate-btn" onclick="generateSite()">
+                    ⚡ GENERATE SITE
+                </button>
+                
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="action-btn" onclick="saveProject()" title="Save Project">
+                        <i class="fas fa-floppy-disk"></i> Save
+                    </button>
+                    <button class="action-btn" onclick="showLoadModal()" title="Load Project">
+                        <i class="fas fa-folder-open"></i> Load
+                    </button>
+                    <button class="action-btn" onclick="downloadCode()" title="Download Code">
+                        <i class="fas fa-download"></i> Export
+                    </button>
                 </div>
             </div>
 
-            <button class="generate-btn" onclick="generateSite()">
-                ⚡ GENERATE SITE
-            </button>
-            <button class="download-btn" onclick="downloadCode()">
-                💾 DOWNLOAD CODE
-            </button>
+            <!-- TEMPLATES TAB -->
+            <div id="tab-templates" class="tab-content">
+                <div class="control-group">
+                    <label>READY-MADE TEMPLATES</label>
+                    <div class="template-grid">
+                        <div class="template-card" onclick="loadTemplate('saas')">
+                            <div class="template-icon">💼</div>
+                            <h4>SaaS Platform</h4>
+                            <p>Modern business app</p>
+                        </div>
+                        <div class="template-card" onclick="loadTemplate('gaming')">
+                            <div class="template-icon">🎮</div>
+                            <h4>Gaming Site</h4>
+                            <p>Esports & tournaments</p>
+                        </div>
+                        <div class="template-card" onclick="loadTemplate('ecommerce')">
+                            <div class="template-icon">🛍️</div>
+                            <h4>E-commerce</h4>
+                            <p>Online store</p>
+                        </div>
+                        <div class="template-card" onclick="loadTemplate('portfolio')">
+                            <div class="template-icon">🎨</div>
+                            <h4>Portfolio</h4>
+                            <p>Creative showcase</p>
+                        </div>
+                        <div class="template-card" onclick="loadTemplate('ai')">
+                            <div class="template-icon">🤖</div>
+                            <h4>AI Startup</h4>
+                            <p>Tech innovation</p>
+                        </div>
+                        <div class="template-card" onclick="loadTemplate('fantasy')">
+                            <div class="template-icon">⚔️</div>
+                            <h4>Fantasy RPG</h4>
+                            <p>Game landing page</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HISTORY TAB -->
+            <div id="tab-history" class="tab-content">
+                <div class="control-group">
+                    <label>RECENT GENERATIONS</label>
+                    <div id="historyList" class="history-list">
+                        <p style="opacity: 0.5; text-align: center; padding: 20px;">No history yet. Generate your first site!</p>
+                    </div>
+                </div>
+                <button class="action-btn" onclick="clearHistory()" style="width: 100%; margin-top: 10px;">
+                    <i class="fas fa-trash"></i> Clear History
+                </button>
+            </div>
         </aside>
 
         <!-- Preview Area -->
         <main class="preview-area">
             <div class="preview-header">
                 <span>LIVE PREVIEW</span>
-                <div class="device-toggles">
-                    <button class="active">Desktop</button>
-                    <button>Mobile</button>
+                <div class="preview-actions">
+                    <div class="device-toggles">
+                        <button class="active">Desktop</button>
+                        <button>Mobile</button>
+                    </div>
+                    <button class="icon-btn" onclick="copyCode()" title="Copy Code">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="icon-btn" onclick="toggleCodeEditor()" title="Edit Code">
+                        <i class="fas fa-code"></i>
+                    </button>
+                    <button class="icon-btn" onclick="refreshPreview()" title="Refresh">
+                        <i class="fas fa-rotate-right"></i>
+                    </button>
                 </div>
             </div>
             
@@ -78,10 +166,33 @@
             
             <!-- AI Console Output -->
             <div id="ai-terminal"></div>
+
+            <!-- Code Editor (Hidden by default) -->
+            <div id="codeEditor" class="code-editor">
+                <div class="editor-header">
+                    <span>CODE EDITOR</span>
+                    <button onclick="applyCodeChanges()" class="apply-btn">Apply Changes</button>
+                </div>
+                <textarea id="codeTextarea" spellcheck="false"></textarea>
+            </div>
         </main>
 
     </div>
 
+    <!-- Load Project Modal -->
+    <div id="loadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Load Project</h3>
+                <button onclick="closeLoadModal()" class="close-btn">&times;</button>
+            </div>
+            <div id="savedProjectsList" class="saved-projects-list">
+                <p style="opacity: 0.5; text-align: center; padding: 20px;">No saved projects</p>
+            </div>
+        </div>
+    </div>
+
     <script src="generator.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
 </body>
 </html>

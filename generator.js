@@ -1112,6 +1112,224 @@ async function startAIPipeline() {
 
 // Global functions
 window.generateSite = startAIPipeline;
+
+// === UI MANAGEMENT ===
+window.switchTab = (tabName) => {
+    // Remove active from all tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    // Add active to selected
+    event.target.classList.add('active');
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+
+    // Load data if needed
+    if (tabName === 'history') loadHistory();
+};
+
+// === PROJECT MANAGEMENT ===
+window.saveProject = () => {
+    const projectName = document.getElementById('projectName').value || 'Untitled';
+    const prompt = document.getElementById('aiPrompt').value;
+    const apiKey = document.getElementById('apiKey').value;
+
+    const project = {
+        name: projectName,
+        prompt: prompt,
+        apiKey: apiKey,
+        hero: document.getElementById('incHero').checked,
+        features: document.getElementById('incFeatures').checked,
+        pricing: document.getElementById('incPricing').checked,
+        footer: document.getElementById('incFooter').checked,
+        timestamp: new Date().toISOString()
+    };
+
+    // Get existing projects
+    const projects = JSON.parse(localStorage.getItem('visions_projects') || '[]');
+    projects.push(project);
+    localStorage.setItem('visions_projects', JSON.stringify(projects));
+
+    alert(`✅ Project "${projectName}" saved!`);
+};
+
+window.showLoadModal = () => {
+    const modal = document.getElementById('loadModal');
+    const list = document.getElementById('savedProjectsList');
+    const projects = JSON.parse(localStorage.getItem('visions_projects') || '[]');
+
+    if (projects.length === 0) {
+        list.innerHTML = '<p style="opacity: 0.5; text-align: center; padding: 20px;">No saved projects</p>';
+    } else {
+        list.innerHTML = projects.map((proj, idx) => `
+            <div class="saved-project-item" onclick="loadProject(${idx})">
+                <div class="saved-project-info">
+                    <h4>${proj.name}</h4>
+                    <p>${new Date(proj.timestamp).toLocaleString()}</p>
+                </div>
+                <button class="delete-project-btn" onclick="event.stopPropagation(); deleteProject(${idx})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    modal.classList.add('active');
+};
+
+window.closeLoadModal = () => {
+    document.getElementById('loadModal').classList.remove('active');
+};
+
+window.loadProject = (index) => {
+    const projects = JSON.parse(localStorage.getItem('visions_projects') || '[]');
+    const project = projects[index];
+
+    if (project) {
+        document.getElementById('projectName').value = project.name;
+        document.getElementById('aiPrompt').value = project.prompt;
+        document.getElementById('apiKey').value = project.apiKey || '';
+        document.getElementById('incHero').checked = project.hero;
+        document.getElementById('incFeatures').checked = project.features;
+        document.getElementById('incPricing').checked = project.pricing;
+        document.getElementById('incFooter').checked = project.footer;
+
+        closeLoadModal();
+        alert(`✅ Project "${project.name}" loaded!`);
+    }
+};
+
+window.deleteProject = (index) => {
+    if (confirm('Delete this project?')) {
+        const projects = JSON.parse(localStorage.getItem('visions_projects') || '[]');
+        projects.splice(index, 1);
+        localStorage.setItem('visions_projects', JSON.stringify(projects));
+        showLoadModal(); // Refresh list
+    }
+};
+
+// === TEMPLATES ===
+const TEMPLATES = {
+    saas: "Modern SaaS platform for project management teams with clean blue design",
+    gaming: "Esports tournament platform with red neon and gritty textures",
+    ecommerce: "Luxury fashion ecommerce store with minimal elegant design",
+    portfolio: "Creative portfolio showcase for designer with dark theme",
+    ai: "AI-powered chatbot landing page with purple neon and glassmorphism",
+    fantasy: "Fantasy RPG game website with gold accents and cinematic feel"
+};
+
+window.loadTemplate = (templateKey) => {
+    const prompt = TEMPLATES[templateKey];
+    document.getElementById('aiPrompt').value = prompt;
+    document.getElementById('projectName').value = templateKey.charAt(0).toUpperCase() + templateKey.slice(1) + ' Site';
+
+    // Switch to create tab
+    document.querySelectorAll('.tab-btn')[0].click();
+
+    alert(`✅ Template "${templateKey}" loaded! Click Generate to create.`);
+};
+
+// === HISTORY ===
+window.loadHistory = () => {
+    const history = JSON.parse(localStorage.getItem('visions_history') || '[]');
+    const list = document.getElementById('historyList');
+
+    if (history.length === 0) {
+        list.innerHTML = '<p style="opacity: 0.5; text-align: center; padding: 20px;">No history yet. Generate your first site!</p>';
+    } else {
+        list.innerHTML = history.slice().reverse().map((item, idx) => `
+            <div class="history-item" onclick="loadHistoryItem(${history.length - 1 - idx})">
+                <div class="history-item-title">${item.prompt.substring(0, 50)}...</div>
+                <div class="history-item-meta">
+                    <span>${item.theme}</span>
+                    <span>${new Date(item.timestamp).toLocaleTimeString()}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+};
+
+window.loadHistoryItem = (index) => {
+    const history = JSON.parse(localStorage.getItem('visions_history') || '[]');
+    const item = history[index];
+
+    if (item) {
+        const frame = document.getElementById('previewFrame');
+        const doc = frame.contentWindow.document;
+        doc.open();
+        doc.write(item.code);
+        doc.close();
+
+        // Switch to create tab and populate
+        document.getElementById('aiPrompt').value = item.prompt;
+        document.querySelectorAll('.tab-btn')[0].click();
+    }
+};
+
+window.clearHistory = () => {
+    if (confirm('Clear all history?')) {
+        localStorage.removeItem('visions_history');
+        loadHistory();
+    }
+};
+
+// Save to history after generation
+window.saveToHistory = (prompt, theme, code) => {
+    const history = JSON.parse(localStorage.getItem('visions_history') || '[]');
+    history.push({
+        prompt: prompt,
+        theme: theme,
+        code: code,
+        timestamp: new Date().toISOString()
+    });
+
+    // Keep only last 20
+    if (history.length > 20) history.shift();
+
+    localStorage.setItem('visions_history', JSON.stringify(history));
+};
+
+// === CODE EDITOR ===
+window.toggleCodeEditor = () => {
+    const editor = document.getElementById('codeEditor');
+    const frame = document.getElementById('previewFrame');
+
+    if (editor.classList.contains('active')) {
+        editor.classList.remove('active');
+    } else {
+        const html = frame.contentWindow.document.documentElement.outerHTML;
+        document.getElementById('codeTextarea').value = html;
+        editor.classList.add('active');
+    }
+};
+
+window.applyCodeChanges = () => {
+    const code = document.getElementById('codeTextarea').value;
+    const frame = document.getElementById('previewFrame');
+    const doc = frame.contentWindow.document;
+    doc.open();
+    doc.write(code);
+    doc.close();
+
+    alert('✅ Code changes applied!');
+};
+
+// === UTILITY FUNCTIONS ===
+window.copyCode = () => {
+    const frame = document.getElementById('previewFrame');
+    const html = frame.contentWindow.document.documentElement.outerHTML;
+
+    navigator.clipboard.writeText(html).then(() => {
+        alert('✅ Code copied to clipboard!');
+    }).catch(err => {
+        console.error('Copy failed:', err);
+    });
+};
+
+window.refreshPreview = () => {
+    const frame = document.getElementById('previewFrame');
+    frame.contentWindow.location.reload();
+};
+
 window.downloadCode = () => {
     const frame = document.getElementById('previewFrame');
     const html = frame.contentWindow.document.documentElement.outerHTML;
@@ -1123,3 +1341,18 @@ window.downloadCode = () => {
     a.click();
     URL.revokeObjectURL(url);
 };
+
+// Update startAIPipeline to save history
+const originalStartAIPipeline = startAIPipeline;
+window.generateSite = async function () {
+    await originalStartAIPipeline();
+
+    // Save to history
+    const prompt = document.getElementById('aiPrompt').value;
+    const frame = document.getElementById('previewFrame');
+    const code = frame.contentWindow.document.documentElement.outerHTML;
+    const theme = 'Generated'; // You can extract this from specs if needed
+
+    saveToHistory(prompt, theme, code);
+};
+

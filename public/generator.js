@@ -62,22 +62,49 @@ const AI_Brain = {
             typography: { head: 'Oswald', body: 'Roboto', googleFonts: 'family=Oswald:wght@700&family=Roboto:wght@400;500;700' },
             ui: { rounded: '4px', border: 'none', shadow: '0 10px 40px rgba(255, 84, 0, 0.3)', glass: false },
             tech: { framework: 'vanilla', animations: 'fade-up', effects: ['slant-sections'] }
+        },
+        'glass': {
+            keywords: ['glass', 'glassmorphism', 'business', 'agency', 'modern', 'clean', 'blob', 'translucent'],
+            vibe: 'glass-modern',
+            palette: { bg: '#f0f2f5', primary: '#4f46e5', secondary: '#ffffff', text: '#1e293b', accent: '#818cf8', surface: 'rgba(255, 255, 255, 0.4)' },
+            typography: { head: 'Poppins', body: 'Inter', googleFonts: 'family=Poppins:wght@600;700&family=Inter:wght@400;500' },
+            ui: { rounded: '24px', border: '1px solid rgba(255, 255, 255, 0.6)', shadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)', glass: true },
+            tech: { framework: 'vanilla', animations: 'float', effects: ['floating-blobs', 'glass-card-shine'] }
         }
     },
 
     // Intelligent Analysis with Context Understanding
     analyze: async (prompt, apiKey) => {
-        // Try Real AI first if key exists
-        if (apiKey && apiKey.length > 10) {
+        // --- 1. ENTERPRISE SERVER AI ---
+        if (apiKey && apiKey.length > 5) {
             try {
-                return await AI_Brain.fetchRealAI(prompt, apiKey);
+                console.log("☁️ Connecting to Enterprise AI Gateway...");
+
+                let provider = 'gemini';
+                if (apiKey.startsWith('sk-')) provider = 'openai';
+
+                const response = await fetch(`${API_URL}/ai/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, provider, apiKey })
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.error || 'AI Gateway Failure');
+
+                console.log(`✅ Server Response: ${data.data.mode}`);
+                return data.data;
+
             } catch (e) {
-                console.error("AI Fetch Failed, using offline intelligence:", e);
-                alert(`⚠️ AI Error: ${e.message || 'Unknown'}\nUsing Offline Mode.`);
+                console.error("AI Gateway Failed:", e);
+                alert(`⚠️ Server AI Error: ${e.message}\nFalling back to offline logic.`);
             }
         }
 
-        // --- ADVANCED OFFLINE AI SIMULATION ---
+        // --- 2. FALLBACK OFFLINE INTELLIGENCE ---
+
+        console.warn("⚠️ No API Key / Server Fail - Using Offline Brain");
+
         const p = prompt.toLowerCase();
 
         // Step 1: Theme Detection with Scoring
@@ -394,8 +421,35 @@ const AI_Brain = {
 const AI_Artist = {
     generate: (spec) => {
         const baseUrl = "https://image.pollinations.ai/prompt/";
-        const params = "?width=1920&height=1080&nologo=true&seed=" + Math.floor(Math.random() * 10000);
+        const seed = Math.floor(Math.random() * 10000);
+        const params = `?width=1920&height=1080&nologo=true&seed=${seed}&model=flux`; // Creating unique seed per session
 
+        // 1. Use LLM-generated prompts if available (Most Intelligent)
+        if (spec.imagePrompts && spec.imagePrompts.background && spec.imagePrompts.hero) {
+            console.log("🎨 Using AI-Generated Image Prompts");
+            return {
+                background: baseUrl + encodeURIComponent(spec.imagePrompts.background) + params,
+                hero: baseUrl + encodeURIComponent(spec.imagePrompts.hero) + params
+            };
+        }
+
+        // 2. Fallback: Construct Context-Aware Prompts from Content (Better than static)
+        // If we have a headline, use it to guide the image
+        if (spec.content && spec.content.hero) {
+            const context = spec.content.hero.headline;
+            const vibe = spec.vibe.replace('-', ' ');
+
+            const dynamicBg = `cinematic background for ${context}, ${vibe} style, high quality, 4k`;
+            const dynamicHero = `hero image for ${context}, ${vibe} style, professional photography, centered, 8k`;
+
+            console.log("🎨 Using Context-Aware Dynamic Prompts");
+            return {
+                background: baseUrl + encodeURIComponent(dynamicBg) + params,
+                hero: baseUrl + encodeURIComponent(dynamicHero) + params
+            };
+        }
+
+        // 3. Last Resort: Static Presets (Legacy)
         let bgPrompt = "";
         let heroPrompt = "";
 
@@ -427,6 +481,10 @@ const AI_Artist = {
             'fitness-energy': {
                 bg: "dark gym atmosphere, weights, smoke, dramatic lighting, orange glow, 8k",
                 hero: "fitness athlete working out, dynamic action shot, gym equipment, high contrast, cinematic lighting"
+            },
+            'glass-modern': {
+                bg: "abstract colorful liquid gradient blobs, soft pastel colors, frosted glass effect background, 4k",
+                hero: "futuristic 3d abstract glass shapes, floating elements, subsurface scattering, iridescent colors, 8k"
             }
         };
 
@@ -487,17 +545,63 @@ const AI_Builder = {
                 z-index: 9999;
                 opacity: 0.1;
             }` : ''}
+            ${specs.tech && specs.tech.effects.includes('floating-blobs') ? `
+            body {
+                background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+                min-height: 100vh;
+                position: relative;
+            }
+            body::before, body::after {
+                content: '';
+                position: fixed;
+                border-radius: 50%;
+                filter: blur(80px);
+                z-index: -1;
+                animation: float-blob 10s infinite ease-in-out alternate;
+            }
+            body::before {
+                width: 600px; height: 600px;
+                background: linear-gradient(to right, #6366f1, #a855f7);
+                top: -100px; left: -100px;
+            }
+            body::after {
+                width: 500px; height: 500px;
+                background: linear-gradient(to right, #3b82f6, #06b6d4);
+                bottom: -50px; right: -50px;
+                animation-delay: -5s;
+            }
+            @keyframes float-blob {
+                0% { transform: translate(0, 0) scale(1); }
+                100% { transform: translate(50px, 50px) scale(1.1); }
+            }
+            .hero-badge, .feature-card, .btn, nav {
+                backdrop-filter: blur(16px) saturate(180%);
+                -webkit-backdrop-filter: blur(16px) saturate(180%);
+                background-color: rgba(255, 255, 255, 0.4) !important;
+                border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            }
+            ` : ''}
 
-            ${specs.tech && specs.tech.effects.includes('gradient-mesh') ? `
+            ${specs.tech && specs.tech.effects.includes('hex-grid') ? `
             body::after {
                 content: '';
                 position: fixed;
                 inset: 0;
-                background: radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.15), transparent 50%),
-                            radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.15), transparent 50%);
+                background-image: 
+                    radial-gradient(circle at 50% 50%, transparent 60%, var(--bg) 100%),
+                    linear-gradient(rgba(255, 0, 60, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 0, 60, 0.03) 1px, transparent 1px);
+                background-size: 100% 100%, 40px 40px, 40px 40px;
                 pointer-events: none;
                 z-index: 0;
-            }` : ''}
+                opacity: 0.8;
+            }
+            .hero h1 {
+                letter-spacing: 5px;
+                text-transform: uppercase;
+                transform: scaleY(1.1);
+            }
+            ` : ''}
 
             /* === TYPOGRAPHY === */
             h1, h2, h3, h4, .brand {
@@ -534,6 +638,10 @@ const AI_Builder = {
                 font-size: 0.95rem;
                 position: relative;
                 overflow: hidden;
+                ${specs.tech && specs.tech.effects.includes('clip-path-buttons') ? `
+                    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+                    padding: 18px 45px;
+                ` : ''}
             }
             
             .btn::before {
@@ -1423,7 +1531,7 @@ window.generateSite = async function () {
 // ==========================================
 // 🚀 FULL STACK API INTEGRATION
 // ==========================================
-const API_URL = '/api';
+const API_URL = '/api/v1';
 
 console.log('🔌 Connecting to Visions AI Backend...');
 

@@ -23,14 +23,14 @@ const DesignKnowledge = {
         structure_hint: "Minimalist layout, lots of whitespace, serif headings, high-contrast imagery, elegant thin lines."
     },
 
-    // 3. CYBERPUNK / GAMING (Rage/Valorant Style)
+    // 3. PRO GAMING / ESPORTS (Shadowcore/Starlight Style)
     'gaming': {
         vibe: 'gaming-action',
-        palette: { bg: '#050505', primary: '#ff4655', secondary: '#0f1923', text: '#ece8e1', accent: '#ff4655', surface: 'rgba(255, 70, 85, 0.1)' },
-        typography: { head: 'Teko', body: 'Rajdhani', googleFonts: 'family=Teko:wght@600;700&family=Rajdhani:wght@500;700&display=swap' },
-        ui: { rounded: '2px', border: '1px solid #ff4655', shadow: '5px 5px 0px rgba(255, 70, 85, 0.4)', glass: false },
-        tech: { framework: 'vanilla', animations: 'glitch', effects: ['scanlines', 'vhs-noise'] },
-        structure_hint: "Aggressive geometry, slanted dividers, glitch effects on hover, bold uppercase typography."
+        palette: { bg: '#050505', primary: '#ff003c', secondary: '#ffffff', text: '#ffffff', accent: '#ff003c', surface: 'rgba(255, 0, 60, 0.05)' },
+        typography: { head: 'Teko', body: 'Rajdhani', googleFonts: 'family=Teko:wght@500;700&family=Rajdhani:wght@500;700&display=swap' },
+        ui: { rounded: '0px', border: '1px solid rgba(255, 0, 60, 0.4)', shadow: '0 0 30px rgba(255, 0, 60, 0.2), inset 0 0 20px rgba(255, 0, 60, 0.1)', glass: false },
+        tech: { framework: 'vanilla', animations: 'glitch', effects: ['hex-grid', 'clip-path-buttons', 'scanlines'] },
+        structure_hint: "Aggressive dark mode, hexagonal/honeycomb pattern overlays, massive shouty typography with wide spacing, and slanted 'trapezoid' buttons."
     },
 
     // 4. CREATIVE PORTFOLIO (Brutalism/Neo-Brutalism)
@@ -61,6 +61,16 @@ const DesignKnowledge = {
         ui: { rounded: '4px', border: 'none', shadow: '0 10px 40px rgba(255, 84, 0, 0.3)', glass: false },
         tech: { framework: 'vanilla', animations: 'fade-up', effects: ['slant-sections'] },
         structure_hint: "High energy, bold uppercase typography, dark background with neon orange accents, dynamic angles."
+    },
+
+    // 7. GLASSMORPHISM / MODERN BUSINESS (Reference: User Uploaded Blobs/Glass)
+    'glass': {
+        vibe: 'glass-modern',
+        palette: { bg: '#f0f2f5', primary: '#4f46e5', secondary: '#ffffff', text: '#1e293b', accent: '#818cf8', surface: 'rgba(255, 255, 255, 0.4)' },
+        typography: { head: 'Poppins', body: 'Inter', googleFonts: 'family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap' },
+        ui: { rounded: '24px', border: '1px solid rgba(255, 255, 255, 0.6)', shadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)', glass: true },
+        tech: { framework: 'vanilla', animations: 'float', effects: ['floating-blobs', 'glass-card-shine'] },
+        structure_hint: "Soft dreamy background with colorful floating gradients, frosted glass cards for content, clean modern typography, 3D abstract elements."
     }
 };
 
@@ -68,6 +78,7 @@ window.getDesignContext = (prompt) => {
     const p = prompt.toLowerCase();
     if (p.includes('game') || p.includes('gaming') || p.includes('play')) return DesignKnowledge.gaming;
     if (p.includes('gym') || p.includes('fit') || p.includes('workout') || p.includes('sport')) return DesignKnowledge.fitness;
+    if (p.includes('business') || p.includes('modern') || p.includes('agency') || p.includes('glass')) return DesignKnowledge.glass;
     if (p.includes('lux') || p.includes('fashion')) return DesignKnowledge.luxury;
     if (p.includes('art') || p.includes('portfolio') || p.includes('fun')) return DesignKnowledge.creative;
     if (p.includes('ai') || p.includes('robot') || p.includes('tech')) return DesignKnowledge.future;

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -37,5 +38,11 @@ app.listen(PORT, () => {
     console.log(`\n🚀 VISIONS AI ENTERPRISE SERVER RUNNING!`);
     console.log(`👉 Dashboard: http://localhost:${PORT}`);
     console.log(`🔌 API Gateway: http://localhost:${PORT}/api/v1`);
-    console.log(`📁 Microservices Active: [Projects, AI_Gateway]\n`);
+    console.log(`📁 Microservices Active: [Projects, AI_Gateway]`);
+    if (process.env.GEMINI_API_KEY) console.log(`🔑 Gemini API Key detected: Yes`);
+    else console.log(`⚠️ Gemini API Key detected: No`);
+
+    if (process.env.OPENAI_API_KEY) console.log(`🔑 OpenAI API Key detected: Yes`);
+    else console.log(`⚠️ OpenAI API Key detected: No`);
+    console.log('\n');
 });

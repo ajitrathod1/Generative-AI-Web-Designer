@@ -76,12 +76,15 @@ const AI_Brain = {
     // Intelligent Analysis with Context Understanding
     analyze: async (prompt, apiKey) => {
         // --- 1. ENTERPRISE SERVER AI ---
-        if (apiKey && apiKey.length > 5) {
+        // --- 1. ENTERPRISE SERVER AI ---
+        // Always try Server AI first (it will use .env key if user key is empty)
+        if (true) {
             try {
                 console.log("☁️ Connecting to Enterprise AI Gateway...");
 
+                // Determine provider based on user input, or default to gemini for server
                 let provider = 'gemini';
-                if (apiKey.startsWith('sk-')) provider = 'openai';
+                if (apiKey && apiKey.startsWith('sk-')) provider = 'openai';
 
                 const response = await fetch(`${API_URL}/ai/generate`, {
                     method: 'POST',
@@ -97,7 +100,7 @@ const AI_Brain = {
 
             } catch (e) {
                 console.error("AI Gateway Failed:", e);
-                alert(`⚠️ Server AI Error: ${e.message}\nFalling back to offline logic.`);
+                showToast(`⚠️ Server AI Error: ${e.message}. Falling back to offline logic.`, 'error');
             }
         }
 
@@ -164,6 +167,10 @@ const AI_Brain = {
                 gallery: needsGallery,
                 cta: needsCTA,
                 footer: true
+            },
+            imagePrompts: {
+                background: `cinematic background for ${brandName} ${selectedPreset.vibe.replace('-', ' ')}, high quality, 4k, ${selectedPreset.keywords.slice(0, 3).join(', ')}`,
+                hero: `hero image for ${brandName}, ${selectedPreset.vibe.replace('-', ' ')} style, professional photography, centered, 8k`
             },
             mode: 'OFFLINE_AI_INTELLIGENCE'
         };
@@ -420,7 +427,7 @@ const AI_Brain = {
 // --- MODULE 2: THE ARTIST (Visual Asset Generator) ---
 const AI_Artist = {
     generate: (spec) => {
-        const baseUrl = "https://image.pollinations.ai/prompt/";
+        const baseUrl = "https://gen.pollinations.ai/image/";
         const seed = Math.floor(Math.random() * 10000);
         const params = `?width=1920&height=1080&nologo=true&seed=${seed}&model=flux`; // Creating unique seed per session
 
@@ -1324,7 +1331,7 @@ window.saveProject = () => {
     projects.push(project);
     localStorage.setItem('visions_projects', JSON.stringify(projects));
 
-    alert(`✅ Project "${projectName}" saved!`);
+    showToast(`Project "${projectName}" saved locally!`, 'success');
 };
 
 window.showLoadModal = () => {
@@ -1366,7 +1373,7 @@ window.loadProject = (index) => {
         // Structure prefs handled by AI
 
         closeLoadModal();
-        alert(`✅ Project "${project.name}" loaded!`);
+        showToast(`Project "${project.name}" loaded!`, 'success');
     }
 };
 
@@ -1397,7 +1404,7 @@ window.loadTemplate = (templateKey) => {
     // Switch to create tab
     document.querySelectorAll('.tab-btn')[0].click();
 
-    alert(`✅ Template "${templateKey}" loaded! Click Generate to create.`);
+    showToast(`Template "${templateKey}" loaded!`, 'info');
 };
 
 // === HISTORY ===
@@ -1482,7 +1489,7 @@ window.applyCodeChanges = () => {
     doc.write(code);
     doc.close();
 
-    alert('✅ Code changes applied!');
+    showToast('Code changes applied!', 'success');
 };
 
 // === UTILITY FUNCTIONS ===
@@ -1491,7 +1498,7 @@ window.copyCode = () => {
     const html = frame.contentWindow.document.documentElement.outerHTML;
 
     navigator.clipboard.writeText(html).then(() => {
-        alert('✅ Code copied to clipboard!');
+        showToast('Code copied to clipboard!', 'success');
     }).catch(err => {
         console.error('Copy failed:', err);
     });
@@ -1555,10 +1562,10 @@ window.saveProject = async () => {
             body: JSON.stringify(project)
         });
 
-        if (res.ok) alert(`✅ Project "${projectName}" saved to Server DB!`);
+        if (res.ok) showToast(`Project "${projectName}" saved to cloud!`, 'success');
         else throw new Error('Failed');
     } catch (e) {
-        alert('❌ Server Error: Is Node.js running?');
+        showToast('❌ Server is offline. Run: npm start', 'error');
         console.error(e);
     }
 };
@@ -1604,7 +1611,7 @@ window.loadProject = (index) => {
         document.getElementById('apiKey').value = project.apiKey || '';
         // Structure prefs handled by AI
         closeLoadModal();
-        alert(`✅ Loaded "${project.name}" from Backend!`);
+        showToast(`Loaded "${project.name}" from Cloud!`, 'success');
     }
 };
 
@@ -1797,3 +1804,32 @@ OUTPUT FULL UPDATED HTML:` }
         throw lastError;
     }
 };
+
+// === TOAST SYSTEM ===
+window.showToast = (msg, type = 'success') => {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const iconMap = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-exclamation',
+        info: 'fa-circle-info'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML = `<i class='fas ${iconMap[type]} toast-icon'></i> <span>${msg}</span>`;
+
+    container.appendChild(toast);
+
+    // Remove after 3s
+    setTimeout(() => {
+        toast.style.animation = 'toast-slide-out 0.4s forwards';
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+};
+

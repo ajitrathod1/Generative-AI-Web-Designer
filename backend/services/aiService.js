@@ -1,7 +1,16 @@
 const fetch = require('node-fetch');
 
 // This logic mimics the frontend 'AI_Brain.fetchRealAI' but runs securely on server
-const generateText = async (prompt, provider = 'gemini', apiKey) => {
+const generateText = async (prompt, provider = 'gemini', userApiKey) => {
+
+    // Resolve API Key (User provided OR Server Env)
+    let apiKey = userApiKey;
+    if (!apiKey || apiKey.trim() === '') {
+        if (provider === 'gemini') apiKey = process.env.GEMINI_API_KEY;
+        if (provider === 'openai') apiKey = process.env.OPENAI_API_KEY;
+    }
+
+    if (!apiKey) throw new Error(`No API Key provided for ${provider} (Client or Server)`);
 
     // Instructions (same as helper logic in frontend)
     const systemInstruction = `
@@ -33,7 +42,7 @@ const generateText = async (prompt, provider = 'gemini', apiKey) => {
 
     try {
         if (provider === 'gemini') {
-            const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+            const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
             let lastError = null;
 
             for (const model of models) {
@@ -62,7 +71,8 @@ const generateText = async (prompt, provider = 'gemini', apiKey) => {
                     return parsed;
 
                 } catch (e) {
-                    console.warn(`[AI SERVICE] ${model} failed:`, e.message);
+                    console.warn(`❌ [AI SERVICE] Model ${model} failed.`);
+                    console.warn(`   Error Details: ${e.message}`);
                     lastError = e;
                 }
             }

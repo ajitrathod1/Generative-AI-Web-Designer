@@ -172,6 +172,13 @@ const AI_Brain = {
                 background: `cinematic background for ${brandName} ${selectedPreset.vibe.replace('-', ' ')}, high quality, 4k, ${selectedPreset.keywords.slice(0, 3).join(', ')}`,
                 hero: `hero image for ${brandName}, ${selectedPreset.vibe.replace('-', ' ')} style, professional photography, centered, 8k`
             },
+            layout: (() => {
+                const layouts = ['classic-centered', 'modern-split', 'immersive-minimal'];
+                // bias based on vibe
+                if (selectedPreset.vibe === 'fantasy-cinematic' || selectedPreset.vibe === 'creative-portfolio') return Math.random() > 0.3 ? 'immersive-minimal' : 'modern-split';
+                if (selectedPreset.vibe === 'saas-clean') return Math.random() > 0.5 ? 'modern-split' : 'classic-centered';
+                return layouts[Math.floor(Math.random() * layouts.length)];
+            })(),
             mode: 'OFFLINE_AI_INTELLIGENCE'
         };
     },
@@ -372,13 +379,14 @@ const AI_Brain = {
         RETURN ONLY VALID JSON (no markdown).
         {
             "vibe": "string (saas-clean | fantasy-cinematic | gaming-action | ai-neon | ecommerce-modern | creative-portfolio)",
+            "layout": "string (classic-centered | modern-split | immersive-minimal)",
             "palette": { "bg": "hex", "primary": "hex", "secondary": "hex", "text": "hex", "accent": "hex", "surface": "hex" },
             "typography": { "head": "Google Font", "body": "Google Font", "googleFonts": "family=Font:wght@weights&display=swap" },
             "ui": { "rounded": "px", "border": "css", "shadow": "css", "glass": boolean },
             "tech": { "framework": "vanilla", "animations": "fade-slide", "effects": ["effect"] },
             "content": {
                 "brand": "Brand",
-                "hero": { "headline": "Head", "subhead": "Sub", "cta": "Btn", "ctaSecondary": "Btn2" },
+                "hero": { "headline": "Head", "subhead": "Sub", "cta": "Btn", "ctaSecondary": "Btn2", "alignment": "left | center" },
                 "features": [{ "icon": "star", "title": "Feat", "desc": "Desc" }],
                 "testimonials": [{ "name": "Name", "role": "Role", "text": "Quote", "rating": 5 }],
                 "pricing": [{ "name": "Plan", "price": "$10", "period": "/mo", "features": ["f1"], "highlight": false }],
@@ -817,6 +825,76 @@ const AI_Builder = {
                 50% { transform: translateY(-20px); }
             }
 
+            /* === LAYOUT VARIANTS === */
+            
+            /* 1. MODERN SPLIT LAYOUT */
+            .layout-modern-split .hero {
+                padding: 0;
+            }
+            .layout-modern-split .hero-container {
+                max-width: 100%;
+                margin: 0;
+                gap: 0;
+            }
+            .layout-modern-split .hero-content {
+                padding: 0 5%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                height: 100vh;
+            }
+            .layout-modern-split .hero-visual {
+                height: 100vh;
+                margin: 0;
+            }
+            .layout-modern-split .hero-visual img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 0;
+                animation: none;
+                box-shadow: none;
+            }
+
+            /* 2. IMMERSIVE MINIMAL LAYOUT */
+            .layout-immersive-minimal .hero {
+                background: url('${images.background}') no-repeat center center/cover !important;
+                text-align: center;
+                position: relative;
+            }
+            .layout-immersive-minimal .hero::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: rgba(0,0,0,0.6);
+                z-index: 1;
+            }
+            .layout-immersive-minimal .hero-container {
+                z-index: 2;
+                flex-direction: column;
+                justify-content: center;
+                height: 100vh;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+            .layout-immersive-minimal .hero-visual {
+                display: none; 
+            }
+            .layout-immersive-minimal .hero-badge {
+                margin-left: auto; margin-right: auto;
+            }
+            .layout-immersive-minimal .hero-actions {
+                justify-content: center;
+            }
+            .layout-immersive-minimal h1 {
+                font-size: clamp(3rem, 7vw, 6rem);
+                color: #fff;
+            }
+            .layout-immersive-minimal p {
+                font-size: 1.5rem;
+                color: rgba(255,255,255,0.9);
+            }
+
             /* === SECTIONS === */
             section {
                 padding: 6rem 5%;
@@ -1052,7 +1130,7 @@ const AI_Builder = {
                 <style>${css}</style>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
             </head>
-            <body>
+            <body class="layout-${specs.layout || 'classic-centered'}">
         `;
 
         // NAVBAR

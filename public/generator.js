@@ -1978,3 +1978,74 @@ window.startVoiceInput = () => {
     recognition.start();
 };
 
+
+// ==========================================
+// ⚡ OPTIMIZED PIPELINE (INSTANT PREVIEW)
+// ==========================================
+async function startAIPipelineOptimized() {
+    const prompt = document.getElementById('aiPrompt').value || "Modern SaaS platform";
+    const terminal = document.getElementById('ai-terminal');
+    const apiKey = document.getElementById('apiKey').value;
+    const options = { hero: true, features: true, pricing: true, footer: true };
+
+    terminal.style.display = 'block';
+    terminal.innerHTML = '';
+    const log = (msg) => {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.style.marginTop = '5px';
+        div.textContent = '> ' + msg;
+        terminal.appendChild(div);
+        terminal.scrollTop = terminal.scrollHeight;
+    };
+
+    try {
+        log('[INIT] AI Pipeline Started (Fast Mode)');
+        await new Promise(r => setTimeout(r, 300));
+
+        // 1. BRAIN
+        log('[BRAIN] Analyzing intent...');
+        const specs = await AI_Brain.analyze(prompt, apiKey);
+        log('[BRAIN] Strategy locked: ' + specs.vibe);
+
+        // 2. PARALLEL EXECUTION
+        log('[ARTIST] Visual assets generating in background...');
+        const imageGenPromise = AI_Artist.generate(specs);
+
+        // 3. INSTANT RENDER (Placeholders)
+        const placeholderImages = {
+            background: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop',
+            hero: 'https://images.unsplash.com/photo-1626544827763-d516dce335ca?q=80&w=1000&auto=format&fit=crop'
+        };
+
+        log('[BUILDER] compiling preview...');
+        const initialCode = AI_Builder.construct(specs, placeholderImages, options);
+
+        const frame = document.getElementById('previewFrame');
+        const doc = frame.contentWindow.document;
+        doc.open(); doc.write(initialCode); doc.close();
+        log('[RENDER] Instant Preview Live! ⚡');
+
+        // 4. WAIT FOR REAL ASSETS
+        log('[ARTIST] Waiting for High-Res assets...');
+        const realImages = await imageGenPromise;
+        log('[ARTIST] Assets ready! Swapping...');
+
+        // 5. UPDATE RENDER
+        const finalCode = AI_Builder.construct(specs, realImages, options);
+        doc.open(); doc.write(finalCode); doc.close();
+
+        log('[SUCCESS] Production Build Complete! 🚀');
+
+        // Pulse
+        frame.style.transition = 'opacity 0.5s';
+        frame.style.opacity = '0.7';
+        setTimeout(() => frame.style.opacity = '1', 500);
+
+    } catch (e) {
+        log('[ERROR] ' + e.message);
+        console.error(e);
+    }
+}
+// Override
+window.generateSite = startAIPipelineOptimized;

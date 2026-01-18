@@ -24,12 +24,12 @@ const AI_Brain = {
             tech: { framework: 'vanilla', animations: 'fade-slide', effects: ['gradient-bg', 'smooth-scroll'] }
         },
         'gaming-action': {
-            keywords: ['shoot', 'fps', 'war', 'rage', 'gritty', 'red', 'action', 'esports', 'tournament', 'battle'],
+            keywords: ['shoot', 'fps', 'war', 'call of duty', 'battlefield', 'tactical', 'soldier', 'military', 'esports', 'bunker'],
             vibe: 'gaming-action',
-            palette: { bg: '#0a0a0a', primary: '#ef4444', secondary: '#000000', text: '#ffffff', accent: '#fee2e2', surface: '#171717' },
-            typography: { head: 'Teko', body: 'Rajdhani', googleFonts: 'family=Teko:wght@600;700&family=Rajdhani:wght@400;600' },
-            ui: { rounded: '0px', border: '2px solid #ef4444', shadow: '10px 10px 0px rgba(239, 68, 68, 0.5)', glass: false },
-            tech: { framework: 'vanilla', animations: 'glitch', effects: ['scanlines', 'vhs-noise', 'hard-shadows'] }
+            palette: { bg: '#050608', primary: '#fbbf24', secondary: '#ffffff', text: '#f3f4f6', accent: '#d97706', surface: 'rgba(20, 20, 30, 0.8)' },
+            typography: { head: 'Anton', body: 'Rajdhani', googleFonts: 'family=Anton&family=Rajdhani:wght@500;600;700' },
+            ui: { rounded: '2px', border: '1px solid rgba(251, 191, 36, 0.3)', shadow: '0 0 40px rgba(0,0,0,0.8)', glass: true },
+            tech: { framework: 'vanilla', animations: 'zoom-out', effects: ['vignette', 'grunge-overlay'] }
         },
         'ai-neon': {
             keywords: ['ai', 'robot', 'future', 'neon', 'purple', 'glow', 'cyber', 'tech', 'innovation', 'neural'],
@@ -434,83 +434,99 @@ const AI_Brain = {
 
 // --- MODULE 2: THE ARTIST (Visual Asset Generator) ---
 const AI_Artist = {
-    generate: (spec) => {
+    generate: async (spec) => {
         const baseUrl = "https://gen.pollinations.ai/image/";
         const seed = Math.floor(Math.random() * 10000);
-        const params = `?width=1920&height=1080&nologo=true&seed=${seed}&model=flux`; // Creating unique seed per session
+        const params = `?width=1920&height=1080&nologo=true&seed=${seed}&model=flux`;
 
-        // 1. Use LLM-generated prompts if available (Most Intelligent)
-        if (spec.imagePrompts && spec.imagePrompts.background && spec.imagePrompts.hero) {
-            console.log("🎨 Using AI-Generated Image Prompts");
-            return {
-                background: baseUrl + encodeURIComponent(spec.imagePrompts.background) + params,
-                hero: baseUrl + encodeURIComponent(spec.imagePrompts.hero) + params
+        // 1. Determine Prompts
+        let bgPrompt = spec.imagePrompts?.background;
+        let heroPrompt = spec.imagePrompts?.hero;
+
+        if (!bgPrompt || !heroPrompt) {
+            // Fallback Prompts if AI didn't provide them
+            const promptMap = {
+                'fantasy-cinematic': {
+                    bg: "dark mythic fantasy castle ruins, cinematic lighting, atmospheric fog, epic landscape, 8k",
+                    hero: "legendary fantasy warrior hero, league of legends style, dynamic pose, detailed armor, magical aura, 8k"
+                },
+                'saas-clean': {
+                    bg: "minimal clean abstract geometric shapes, soft blue gradient, corporate background, 8k",
+                    hero: "3d isometric illustration people working laptops, modern vector art, clean professional"
+                },
+                'gaming-action': {
+                    bg: "cinematic warzone battlefield, smoke, embers, dark starry sky, hyper-realistic, 8k, call of duty atmosphere",
+                    hero: "elite special forces soldier, tactical gear, holding weapon, intense gaze, cinematic lighting, 8k, detailed face"
+                },
+                'ai-neon': {
+                    bg: "dark abstract cyberspace purple neon grid lines, deep depth of field, digital bokeh",
+                    hero: "advanced futuristic robot AI, glossy white illuminated purple details, 3d octane render"
+                },
+                'ecommerce-modern': {
+                    bg: "minimal white studio background, soft shadows, clean product photography setup",
+                    hero: "elegant fashion model modern clothing, studio lighting, professional photography"
+                },
+                'creative-portfolio': {
+                    bg: "dark minimalist abstract gradient, modern design background, 8k",
+                    hero: "creative workspace setup, macbook, design tools, modern aesthetic, professional photography"
+                },
+                'fitness-energy': {
+                    bg: "dark gym atmosphere, weights, smoke, dramatic lighting, orange glow, 8k",
+                    hero: "fitness athlete working out, dynamic action shot, gym equipment, high contrast, cinematic lighting"
+                },
+                'glass-modern': {
+                    bg: "abstract colorful liquid gradient blobs, soft pastel colors, frosted glass effect background, 4k",
+                    hero: "futuristic 3d abstract glass shapes, floating elements, subsurface scattering, iridescent colors, 8k"
+                }
             };
+
+            const prompts = promptMap[spec.vibe] || {
+                bg: `modern ${spec.vibe.replace('-', ' ')} background, high quality, 4k`,
+                hero: `${spec.content.hero.headline} related visual, professional photography, high quality, 8k`
+            };
+            bgPrompt = prompts.bg;
+            heroPrompt = prompts.hero;
         }
 
-        // 2. Fallback: Construct Context-Aware Prompts from Content (Better than static)
-        // If we have a headline, use it to guide the image
-        if (spec.content && spec.content.hero) {
-            const context = spec.content.hero.headline;
-            const vibe = spec.vibe.replace('-', ' ');
+        // 2. Try Server-Side Generation (Hugging Face via Backend)
+        try {
+            console.log("🎨 Attempting Server-Side Image Generation (Hugging Face)...");
 
-            const dynamicBg = `cinematic background for ${context}, ${vibe} style, high quality, 4k`;
-            const dynamicHero = `hero image for ${context}, ${vibe} style, professional photography, centered, 8k`;
-
-            console.log("🎨 Using Context-Aware Dynamic Prompts");
-            return {
-                background: baseUrl + encodeURIComponent(dynamicBg) + params,
-                hero: baseUrl + encodeURIComponent(dynamicHero) + params
+            // Helper for generation
+            const genImage = async (p) => {
+                const res = await fetch('/api/v1/ai/generate-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: p, provider: 'huggingface' })
+                });
+                const data = await res.json();
+                if (data.success) return data.data.url;
+                throw new Error(data.error || 'Server Gen Failed');
             };
+
+            // We only try server if we think we might have a key (or just try and fallback)
+            // To save time, let's fire mostly if not 'saas' (saas usually fine with pollination)
+            // But user asked for HF, so we try for all.
+
+            // Note: This might take time, so we should update UI effectively.
+
+            const [bgUrl, heroUrl] = await Promise.all([
+                genImage(bgPrompt),
+                genImage(heroPrompt)
+            ]);
+
+            console.log("✅ Server Generation Success!");
+            return { background: bgUrl, hero: heroUrl };
+
+        } catch (e) {
+            console.warn("⚠️ Server Image Gen Failed/Skipped, falling back to Pollinations:", e.message);
         }
 
-        // 3. Last Resort: Static Presets (Legacy)
-        let bgPrompt = "";
-        let heroPrompt = "";
-
-        const promptMap = {
-            'fantasy-cinematic': {
-                bg: "dark mythic fantasy castle ruins, cinematic lighting, atmospheric fog, epic landscape, 8k",
-                hero: "legendary fantasy warrior hero, league of legends style, dynamic pose, detailed armor, magical aura, 8k"
-            },
-            'saas-clean': {
-                bg: "minimal clean abstract geometric shapes, soft blue gradient, corporate background, 8k",
-                hero: "3d isometric illustration people working laptops, modern vector art, clean professional"
-            },
-            'gaming-action': {
-                bg: "gritty concrete wall red neon lights, dark moody atmosphere, apocalyptic texture",
-                hero: "futuristic cyberpunk soldier heavy weaponry, rage 2 style, intense action pose, 3d render"
-            },
-            'ai-neon': {
-                bg: "dark abstract cyberspace purple neon grid lines, deep depth of field, digital bokeh",
-                hero: "advanced futuristic robot AI, glossy white illuminated purple details, 3d octane render"
-            },
-            'ecommerce-modern': {
-                bg: "minimal white studio background, soft shadows, clean product photography setup",
-                hero: "elegant fashion model modern clothing, studio lighting, professional photography"
-            },
-            'creative-portfolio': {
-                bg: "dark minimalist abstract gradient, modern design background, 8k",
-                hero: "creative workspace setup, macbook, design tools, modern aesthetic, professional photography"
-            },
-            'fitness-energy': {
-                bg: "dark gym atmosphere, weights, smoke, dramatic lighting, orange glow, 8k",
-                hero: "fitness athlete working out, dynamic action shot, gym equipment, high contrast, cinematic lighting"
-            },
-            'glass-modern': {
-                bg: "abstract colorful liquid gradient blobs, soft pastel colors, frosted glass effect background, 4k",
-                hero: "futuristic 3d abstract glass shapes, floating elements, subsurface scattering, iridescent colors, 8k"
-            }
-        };
-
-        const prompts = promptMap[spec.vibe] || {
-            bg: `modern ${spec.vibe.replace('-', ' ')} background, high quality, 4k`,
-            hero: `${spec.content.hero.headline} related visual, professional photography, high quality, 8k`
-        };
-
+        // 3. Fallback: Pollinations.ai (Instant)
+        console.log("🎨 Using Pollinations AI Fallback");
         return {
-            background: baseUrl + encodeURIComponent(prompts.bg) + params,
-            hero: baseUrl + encodeURIComponent(prompts.hero) + params
+            background: baseUrl + encodeURIComponent(bgPrompt) + params,
+            hero: baseUrl + encodeURIComponent(heroPrompt) + params
         };
     }
 };
@@ -615,6 +631,29 @@ const AI_Builder = {
                 letter-spacing: 5px;
                 text-transform: uppercase;
                 transform: scaleY(1.1);
+            }
+            ` : ''}
+            
+            ${specs.tech && specs.tech.effects.includes('vignette') ? `
+            body::after {
+                content: '';
+                position: fixed;
+                inset: 0;
+                background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 100%);
+                pointer-events: none;
+                z-index: 900;
+            }
+            ` : ''}
+
+            ${specs.tech && specs.tech.effects.includes('grunge-overlay') ? `
+            .hero::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
+                opacity: 0.4;
+                mix-blend-mode: overlay;
+                pointer-events: none;
             }
             ` : ''}
 
@@ -1338,17 +1377,10 @@ async function startAIPipeline() {
         log(`[BRAIN] Sections: ${Object.keys(specs.sections).filter(k => specs.sections[k]).join(', ')}`);
 
         // 2. ARTIST
-        log(`[ARTIST] Generating visual assets...`);
-        let images;
-        if (specs.imagePrompts && specs.imagePrompts.background) {
-            images = {
-                background: "https://image.pollinations.ai/prompt/" + encodeURIComponent(specs.imagePrompts.background + ", 8k") + "?nologo=true",
-                hero: "https://image.pollinations.ai/prompt/" + encodeURIComponent(specs.imagePrompts.hero + ", 8k") + "?nologo=true"
-            };
-        } else {
-            images = AI_Artist.generate(specs);
-        }
-        log(`[ARTIST] Assets ready (Pollinations AI)`);
+        log(`[ARTIST] Generating visual assets (HuggingFace / Flux)...`);
+        const images = await AI_Artist.generate(specs);
+        log(`[ARTIST] Assets ready!`);
+
 
         // 3. BUILDER
         await new Promise(r => setTimeout(r, 800));
@@ -1467,7 +1499,7 @@ window.deleteProject = (index) => {
 // === TEMPLATES ===
 const TEMPLATES = {
     saas: "Modern SaaS platform for project management teams with clean blue design",
-    gaming: "Esports tournament platform with red neon and gritty textures",
+    gaming: "High-octane Call of Duty style gaming site with cinematic warzone background and gold accents",
     ecommerce: "Luxury fashion ecommerce store with minimal elegant design",
     portfolio: "Creative portfolio showcase for designer with dark theme",
     ai: "AI-powered chatbot landing page with purple neon and glassmorphism",

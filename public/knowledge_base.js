@@ -23,14 +23,14 @@ const DesignKnowledge = {
         structure_hint: "Minimalist layout, lots of whitespace, serif headings, high-contrast imagery, elegant thin lines."
     },
 
-    // 3. PRO GAMING / ESPORTS (Shadowcore/Starlight Style)
+    // 3. PRO GAMING / ESPORTS (Call of Duty / Battlefield Style)
     'gaming': {
         vibe: 'gaming-action',
-        palette: { bg: '#050505', primary: '#ff003c', secondary: '#ffffff', text: '#ffffff', accent: '#ff003c', surface: 'rgba(255, 0, 60, 0.05)' },
-        typography: { head: 'Teko', body: 'Rajdhani', googleFonts: 'family=Teko:wght@500;700&family=Rajdhani:wght@500;700&display=swap' },
-        ui: { rounded: '0px', border: '1px solid rgba(255, 0, 60, 0.4)', shadow: '0 0 30px rgba(255, 0, 60, 0.2), inset 0 0 20px rgba(255, 0, 60, 0.1)', glass: false },
-        tech: { framework: 'vanilla', animations: 'glitch', effects: ['hex-grid', 'clip-path-buttons', 'scanlines'] },
-        structure_hint: "Aggressive dark mode, hexagonal/honeycomb pattern overlays, massive shouty typography with wide spacing, and slanted 'trapezoid' buttons."
+        palette: { bg: '#050608', primary: '#fbbf24', secondary: '#ffffff', text: '#f3f4f6', accent: '#d97706', surface: 'rgba(20, 20, 30, 0.8)' },
+        typography: { head: 'Anton', body: 'Rajdhani', googleFonts: 'family=Anton&family=Rajdhani:wght@500;600;700&display=swap' },
+        ui: { rounded: '2px', border: '1px solid rgba(251, 191, 36, 0.3)', shadow: '0 0 50px rgba(0,0,0,0.9)', glass: true },
+        tech: { framework: 'vanilla', animations: 'zoom-out', effects: ['vignette', 'grunge-overlay'] },
+        structure_hint: "Cinematic full-screen warzone background, gold/yellow accent buttons, bold uppercase typography, glass cards overlaying the hero."
     },
 
     // 4. CREATIVE PORTFOLIO (Brutalism/Neo-Brutalism)

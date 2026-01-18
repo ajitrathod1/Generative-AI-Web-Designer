@@ -1909,3 +1909,72 @@ window.showToast = (msg, type = 'success') => {
     }, 3000);
 };
 
+
+// ==========================================
+// ?? VOICE & UTILITIES
+// ==========================================
+
+window.fillSurprisePrompt = () => {
+    const ideas = [
+        'A cyberpunk street food market landing page with neon glitched text and smoky background',
+        'Minimalist architectural portfolio with horizontal scrolling and brutalist typography',
+        'Cozy bookstore website with warm colors, serif fonts, and floating book animations',
+        'High-tech AI startup landing page with glassmorphism, floating 3D nodes, and gradient mesh',
+        'Retro 80s synthwave music festival site with grid backgrounds and vibrant pink/purple colors',
+        'Eco-friendly sustainable living e-commerce store with natural green palette and soft leaf animations',
+        'Luxury watch brand showcase with dark mode, gold accents, and slow reveal animations',
+        'Fitness app landing page with high-energy orange theme, skew layouts, and bold motion',
+        'Digital art NFT marketplace with dark background, holographic cards, and glow effects',
+        'Modern SaaS dashboard with clean blue accents, bento grid layout, and subtle shadows'
+    ];
+    const random = ideas[Math.floor(Math.random() * ideas.length)];
+    const el = document.getElementById('aiPrompt');
+    
+    // Type scaling effect
+    el.value = '';
+    let i = 0;
+    const type = setInterval(() => {
+        el.value += random.charAt(i);
+        i++;
+        if (i >= random.length) clearInterval(type);
+    }, 15);
+};
+
+window.startVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+        showToast('Voice input not supported in this browser.', 'error');
+        return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    const btn = document.getElementById('micBtn');
+    
+    recognition.onstart = () => {
+        btn.classList.add('recording');
+        showToast('Listening... Speak now ???', 'info');
+    };
+
+    recognition.onend = () => {
+        btn.classList.remove('recording');
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        const el = document.getElementById('aiPrompt');
+        el.value = transcript;
+        showToast('Heard: ' + transcript, 'success');
+    };
+
+    recognition.onerror = (e) => {
+        console.error(e);
+        btn.classList.remove('recording');
+        showToast('Voice Error: ' + e.error, 'error');
+    };
+
+    recognition.start();
+};
+

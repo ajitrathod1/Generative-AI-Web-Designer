@@ -46,7 +46,13 @@
                 </div>
 
                 <div class="control-group">
-                    <label>DESCRIBE YOUR VISION</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label>DESCRIBE YOUR VISION</label>
+                        <div class="prompt-actions">
+                             <button type="button" onclick="fillSurprisePrompt()" class="icon-btn-small" title="Surprise Me">🎲</button>
+                             <button type="button" onclick="startVoiceInput()" id="micBtn" class="icon-btn-small" title="Voice Input">🎤</button>
+                        </div>
+                    </div>
                     <textarea id="aiPrompt" placeholder="e.g. A futuristic gaming store with neon vibes... or A cozy coffee shop for students..." style="width: 100%; height: 120px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; padding: 14px; font-family: inherit; resize: none;"></textarea>
                 </div>
 

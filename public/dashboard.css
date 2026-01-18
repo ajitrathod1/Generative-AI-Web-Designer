@@ -883,3 +883,38 @@ input[type="checkbox"] {
     to { transform: translateX(100%); opacity: 0; }
 }
 
+
+/* === PROMPT ACTIONS === */
+.prompt-actions {
+    display: flex;
+    gap: 6px;
+}
+.icon-btn-small {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    font-size: 12px;
+}
+.icon-btn-small:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: var(--accent-solid);
+}
+.icon-btn-small.recording {
+    color: #ff4444;
+    border-color: #ff4444;
+    animation: pulse-red 1.5s infinite;
+}
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(255, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+}

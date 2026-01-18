@@ -376,6 +376,8 @@ const AI_Brain = {
         You are a SENIOR FULL-STACK DEVELOPER & UI/UX ARCHITECT.
         ${designGuidance}
         Analyze the user's landing page request and generate a COMPLETE, PROFESSIONAL design specification.
+        The user wants a multi-page website structure (e.g. Home, About, Contact).
+        
         RETURN ONLY VALID JSON (no markdown).
         {
             "vibe": "string (saas-clean | fantasy-cinematic | gaming-action | ai-neon | ecommerce-modern | creative-portfolio)",
@@ -384,15 +386,26 @@ const AI_Brain = {
             "typography": { "head": "Google Font", "body": "Google Font", "googleFonts": "family=Font:wght@weights&display=swap" },
             "ui": { "rounded": "px", "border": "css", "shadow": "css", "glass": boolean },
             "tech": { "framework": "vanilla", "animations": "fade-slide", "effects": ["effect"] },
-            "content": {
-                "brand": "Brand",
-                "hero": { "headline": "Head", "subhead": "Sub", "cta": "Btn", "ctaSecondary": "Btn2", "alignment": "left | center" },
-                "features": [{ "icon": "star", "title": "Feat", "desc": "Desc" }],
-                "testimonials": [{ "name": "Name", "role": "Role", "text": "Quote", "rating": 5 }],
-                "pricing": [{ "name": "Plan", "price": "$10", "period": "/mo", "features": ["f1"], "highlight": false }],
-                "footer": { "tagline": "Tag", "links": { "product": [], "company": [], "legal": [] }, "social": ["twitter"] }
+            "pages": {
+                "home": {
+                    "brand": "Brand",
+                    "hero": { "headline": "Head", "subhead": "Sub", "cta": "Btn", "ctaSecondary": "Btn2", "alignment": "left | center" },
+                    "features": [{ "icon": "star", "title": "Feat", "desc": "Desc" }],
+                    "testimonials": [{ "name": "Name", "role": "Role", "text": "Quote", "rating": 5 }],
+                    "pricing": [{ "name": "Plan", "price": "$10", "period": "/mo", "features": ["f1"], "highlight": false }],
+                    "footer": { "tagline": "Tag", "links": { "product": [], "company": [], "legal": [] }, "social": ["twitter"] }
+                },
+                "about": {
+                    "title": "About Us",
+                    "content": "Story of the company...",
+                    "team": [{ "name": "Name", "role": "Role" }]
+                },
+                "contact": {
+                    "title": "Contact Us",
+                    "email": "contact@example.com",
+                    "address": "123 Tech Street"
+                }
             },
-            "sections": { "hero": true, "features": true, "testimonials": true, "pricing": true, "gallery": false, "cta": true, "footer": true },
             "imagePrompts": { "background": "midjourney prompt", "hero": "midjourney prompt" }
         }`;
 
@@ -480,9 +493,10 @@ const AI_Artist = {
                 }
             };
 
+            const heroHeadline = spec.content?.hero?.headline || spec.pages?.home?.hero?.headline || "Website";
             const prompts = promptMap[spec.vibe] || {
                 bg: `modern ${spec.vibe.replace('-', ' ')} background, high quality, 4k`,
-                hero: `${spec.content.hero.headline} related visual, professional photography, high quality, 8k`
+                hero: `${heroHeadline} related visual, professional photography, high quality, 8k`
             };
             bgPrompt = prompts.bg;
             heroPrompt = prompts.hero;
@@ -1157,187 +1171,139 @@ const AI_Builder = {
             }
         `;
 
-        // HTML Generator with Smart Sections
-        let html = `
+        // HTML Generator with Multi-Page Support
+
+        // Helper to generate Common Head/Style
+        const generateHead = (title) => `
             <!DOCTYPE html>
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>${specs.content.hero.headline} | ${specs.content.brand}</title>
-                <meta name="description" content="${specs.content.hero.subhead}">
+                <title>${title} | ${specs.pages?.home?.brand || specs.content?.brand}</title>
                 <style>${css}</style>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+                <script>
+                    function navigate(pageId) {
+                        document.querySelectorAll('.page-section').forEach(el => el.style.display = 'none');
+                        document.getElementById(pageId).style.display = 'block';
+                        window.scrollTo(0,0);
+                    }
+                </script>
             </head>
             <body class="layout-${specs.layout || 'classic-centered'}">
         `;
 
-        // NAVBAR
-        html += `
+        // Helper for Nav
+        const generateNav = () => `
             <nav>
-                <div class="brand">${specs.content.brand}</div>
+                <div class="brand">${specs.pages?.home?.brand || specs.content?.brand}</div>
                 <ul class="nav-links">
-                    ${specs.sections.features ? '<li><a href="#features">Features</a></li>' : ''}
-                    ${specs.sections.testimonials ? '<li><a href="#testimonials">Testimonials</a></li>' : ''}
-                    ${specs.sections.pricing ? '<li><a href="#pricing">Pricing</a></li>' : ''}
+                    <li><a href="#" onclick="navigate('page-home')">Home</a></li>
+                    <li><a href="#" onclick="navigate('page-about')">About</a></li>
+                    <li><a href="#" onclick="navigate('page-contact')">Contact</a></li>
                     <li><a href="#" class="nav-cta">Get Started</a></li>
                 </ul>
             </nav>
         `;
 
-        // HERO
-        if (specs.sections.hero) {
-            html += `
+        // PAGE 1: HOME
+        const homeContent = specs.pages?.home || specs.content; // fallback
+        let homeHTML = `
+            <div id="page-home" class="page-section">
+                ${generateNav()}
+                
+                ${specs.sections?.hero !== false ? `
                 <header class="hero">
                     <div class="hero-container">
                         <div class="hero-content">
                             <div class="hero-badge">✨ Now Available</div>
-                            <h1>${specs.content.hero.headline}</h1>
-                            <p>${specs.content.hero.subhead}</p>
-                            
+                            <h1>${homeContent.hero.headline}</h1>
+                            <p>${homeContent.hero.subhead}</p>
                             <div class="hero-actions">
-                                <a href="#" class="btn">${specs.content.hero.cta}</a>
-                                <a href="#" class="btn btn-secondary">${specs.content.hero.ctaSecondary}</a>
-                            </div>
-
-                            <div class="hero-stats">
-                                <div class="stat">
-                                    <strong>2M+</strong>
-                                    <span>Active Users</span>
-                                </div>
-                                <div class="stat">
-                                    <strong>4.9/5</strong>
-                                    <span>Rating</span>
-                                </div>
-                                <div class="stat">
-                                    <strong>150+</strong>
-                                    <span>Countries</span>
-                                </div>
+                                <a href="#" class="btn">${homeContent.hero.cta}</a>
+                                <a href="#" class="btn btn-secondary">${homeContent.hero.ctaSecondary}</a>
                             </div>
                         </div>
-
                         <div class="hero-visual">
                             <img src="${images.hero}" alt="Hero Visual">
                         </div>
                     </div>
-                </header>
-            `;
-        }
+                </header>` : ''}
 
-        // FEATURES
-        if (specs.sections.features) {
-            html += `
+                ${specs.sections?.features !== false && homeContent.features ? `
                 <section id="features">
-                    <div class="section-header">
-                        <h2>Powerful Features</h2>
-                        <p>Everything you need to succeed, all in one platform.</p>
-                    </div>
+                    <div class="section-header"><h2>Key Features</h2></div>
                     <div class="features-grid">
-                        ${specs.content.features.map(f => `
+                        ${homeContent.features.map(f => `
                             <div class="feature-card">
-                                <div class="feature-icon">
-                                    <i class="fa-solid fa-${f.icon}"></i>
-                                </div>
+                                <div class="feature-icon"><i class="fa-solid fa-${f.icon}"></i></div>
                                 <h3>${f.title}</h3>
                                 <p>${f.desc}</p>
                             </div>
                         `).join('')}
                     </div>
-                </section>
-            `;
-        }
-
-        // TESTIMONIALS
-        if (specs.sections.testimonials) {
-            html += `
-                <section id="testimonials" style="background: var(--surface);">
-                    <div class="section-header">
-                        <h2>Loved by Thousands</h2>
-                        <p>See what our customers have to say about us.</p>
-                    </div>
-                    <div class="testimonials-grid">
-                        ${specs.content.testimonials.map(t => `
-                            <div class="testimonial-card">
-                                <div class="stars">${'★'.repeat(t.rating)}</div>
-                                <p class="testimonial-text">"${t.text}"</p>
-                                <div class="testimonial-author">
-                                    <strong>${t.name}</strong>
-                                    <span>${t.role}</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </section>
-            `;
-        }
-
-        // PRICING
-        if (specs.sections.pricing && specs.content.pricing) {
-            html += `
+                </section>` : ''}
+                
+                ${specs.sections?.pricing !== false && homeContent.pricing ? `
                 <section id="pricing">
-                    <div class="section-header">
-                        <h2>Simple, Transparent Pricing</h2>
-                        <p>Choose the plan that's right for you.</p>
-                    </div>
+                    <div class="section-header"><h2>Pricing</h2></div>
                     <div class="pricing-grid">
-                        ${specs.content.pricing.map(plan => `
+                        ${homeContent.pricing.map(plan => `
                             <div class="pricing-card ${plan.highlight ? 'highlight' : ''}">
-                                ${plan.highlight ? '<div class="hero-badge" style="margin-bottom: 1rem;">Most Popular</div>' : ''}
                                 <div class="plan-name">${plan.name}</div>
-                                <div class="plan-price">${plan.price}<span>${plan.period}</span></div>
-                                <ul class="plan-features">
-                                    ${plan.features.map(f => `<li>${f}</li>`).join('')}
-                                </ul>
-                                <a href="#" class="btn" style="width: 100%;">Choose Plan</a>
+                                <div class="plan-price">${plan.price}</div>
+                                <ul class="plan-features">${plan.features.map(f => `<li>${f}</li>`).join('')}</ul>
+                                <a href="#" class="btn">Choose</a>
                             </div>
                         `).join('')}
                     </div>
-                </section>
-            `;
-        }
+                </section>` : ''}
+            </div>
+        `;
 
-        // FOOTER
-        if (specs.sections.footer) {
-            html += `
-                <footer>
-                    <div class="footer-content">
-                        <div class="footer-col">
-                            <div class="footer-brand">${specs.content.brand}</div>
-                            <p>${specs.content.footer.tagline}</p>
-                            <div class="social-icons">
-                                ${specs.content.footer.social.map(s => `
-                                    <a href="#"><i class="fa-brands fa-${s}"></i></a>
-                                `).join('')}
+        // PAGE 2: ABOUT (If generated, else placeholder)
+        const aboutContent = specs.pages?.about || { title: "About Us", content: "We are a passionate team building the future.", team: [] };
+        let aboutHTML = `
+            <div id="page-about" class="page-section" style="display: none; padding-top: 80px;">
+                ${generateNav()}
+                <section>
+                    <div class="section-header">
+                        <h1>${aboutContent.title}</h1>
+                        <p style="font-size: 1.2rem; max-width: 800px; margin: 0 auto;">${aboutContent.content}</p>
+                    </div>
+                    ${aboutContent.team && aboutContent.team.length > 0 ? `
+                    <div class="features-grid" style="margin-top: 4rem;">
+                        ${aboutContent.team.map(m => `
+                            <div class="feature-card" style="text-align: center;">
+                                <div style="width: 80px; height: 80px; background: var(--surface); border-radius: 50%; margin: 0 auto 1rem;"></div>
+                                <h3>${m.name}</h3>
+                                <p>${m.role}</p>
                             </div>
-                        </div>
-                        <div class="footer-col">
-                            <h4>Product</h4>
-                            <ul>
-                                ${specs.content.footer.links.product.map(l => `<li><a href="#">${l}</a></li>`).join('')}
-                            </ul>
-                        </div>
-                        <div class="footer-col">
-                            <h4>Company</h4>
-                            <ul>
-                                ${specs.content.footer.links.company.map(l => `<li><a href="#">${l}</a></li>`).join('')}
-                            </ul>
-                        </div>
-                        <div class="footer-col">
-                            <h4>Legal</h4>
-                            <ul>
-                                ${specs.content.footer.links.legal.map(l => `<li><a href="#">${l}</a></li>`).join('')}
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="footer-bottom">
-                        <p>&copy; 2024 ${specs.content.brand}. All rights reserved. Built with VISIONS AI.</p>
-                    </div>
-                </footer>
-            `;
-        }
+                        `).join('')}
+                    </div>` : ''}
+                </section>
+            </div>
+        `;
 
-        html += `</body></html>`;
-        return html;
+        // PAGE 3: CONTACT
+        const contactContent = specs.pages?.contact || { title: "Contact Us", email: "hello@vision.ai", address: "Tech Hub, City" };
+        let contactHTML = `
+            <div id="page-contact" class="page-section" style="display: none; padding-top: 80px;">
+                ${generateNav()}
+                <section>
+                     <div class="section-header">
+                        <h1>${contactContent.title}</h1>
+                        <div style="background: var(--surface); padding: 3rem; border-radius: var(--rounded); display: inline-block; margin-top: 2rem; border: ${specs.ui.border};">
+                            <p style="font-size: 1.5rem; margin-bottom: 1rem;"><i class="fas fa-envelope"></i> ${contactContent.email}</p>
+                            <p style="font-size: 1.5rem;"><i class="fas fa-location-dot"></i> ${contactContent.address}</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        `;
+
+        return generateHead("Website") + homeHTML + aboutHTML + contactHTML + "</body></html>";
     }
 };
 
